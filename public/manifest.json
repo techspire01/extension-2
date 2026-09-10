@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "Material You New Tab",
+  "version": "1.0.0",
+  "description": "Personalize your new tab page with Google's Material You design, dynamic themes, widgets, and customizable quick access dashboard.",
+  "action": {
+    "default_title": "Material You New Tab"
+  },
+  "chrome_url_overrides": {
+    "newtab": "index.html"
+  },
+  "permissions": [
+    "storage"
+  ]
+}

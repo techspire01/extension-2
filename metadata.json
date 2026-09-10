@@ -1,0 +1,6 @@
+{
+  "name": "Material You New Tab",
+  "description": "A customizable new tab dashboard and browser extension featuring Google's Material You design, dynamic color palettes, analog & digital clocks, weather, quick access shortcuts, and AI tools.",
+  "requestFramePermissions": ["geolocation", "microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
