@@ -152,19 +152,21 @@ export const ShortcutsGrid: React.FC<ShortcutsGridProps> = ({
       {/* Grid of Shortcuts */}
       <div
         id="shortcutsContainer"
-        className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3 sm:gap-4 select-none"
+        className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3 sm:gap-4 select-none items-center justify-items-center"
       >
         {shortcuts.map((item) => {
           return (
             <div
               key={item.id}
-              className={`relative group flex flex-col items-center justify-center rounded-2xl bg-[var(--md-sys-color-surface-container)]/80 hover:bg-[var(--md-sys-color-surface-container)] backdrop-blur-md border border-[var(--md-sys-color-outline)]/30 shadow-sm hover:shadow-md transition-all duration-200 active:scale-95 ${
-                isOnlyIcons ? 'p-2.5 sm:p-3 aspect-square' : 'p-3'
+              className={`relative group flex flex-col items-center justify-center transition-all duration-200 ${
+                isOnlyIcons
+                  ? 'p-1'
+                  : 'p-2 rounded-2xl hover:bg-[var(--md-sys-color-surface-container)]/50'
               }`}
             >
               {/* Edit or Delete Action Badges in Edit Mode */}
               {isEditMode && (
-                <div className="absolute -top-1.5 -right-1.5 flex items-center gap-1 z-20">
+                <div className="absolute -top-1 -right-1 flex items-center gap-1 z-20">
                   <button
                     onClick={() => openEditModal(item)}
                     title="Edit shortcut"
@@ -194,19 +196,21 @@ export const ShortcutsGrid: React.FC<ShortcutsGridProps> = ({
                     openEditModal(item);
                   }
                 }}
-                className="flex flex-col items-center justify-center w-full h-full"
+                className={`flex flex-col items-center justify-center transition-all duration-200 active:scale-95 ${
+                  isOnlyIcons ? 'group-hover:scale-110' : ''
+                }`}
               >
-                {/* Icon Container with Adaptive Material You styling */}
+                {/* Icon Container: Clean icon alone with subtle hover background */}
                 <div
-                  className={`w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center shadow-inner transition-transform group-hover:scale-110 overflow-hidden ${
-                    !isOnlyIcons ? 'mb-2' : ''
+                  className={`w-14 h-14 sm:w-16 sm:h-16 rounded-2xl sm:rounded-3xl flex items-center justify-center transition-all duration-200 overflow-hidden ${
+                    !isOnlyIcons ? 'mb-1.5' : ''
                   } ${
-                    settings.adaptiveIcons
-                      ? 'bg-[var(--md-sys-color-primary-container)] text-[var(--md-sys-color-on-primary-container)]'
-                      : 'bg-[var(--md-sys-color-surface-container-high)]'
+                    settings.adaptiveIcons && !isOnlyIcons
+                      ? 'bg-[var(--md-sys-color-primary-container)] text-[var(--md-sys-color-on-primary-container)] shadow-xs'
+                      : 'hover:bg-[var(--md-sys-color-surface-container-high)]/60'
                   }`}
                   style={
-                    !settings.adaptiveIcons && item.customColor
+                    !settings.adaptiveIcons && item.customColor && !isOnlyIcons
                       ? {
                           backgroundColor: `${item.customColor}20`,
                           borderColor: `${item.customColor}40`,
@@ -217,18 +221,18 @@ export const ShortcutsGrid: React.FC<ShortcutsGridProps> = ({
                   <img
                     src={getFaviconUrl(item)}
                     alt={item.title}
-                    className="w-6 h-6 sm:w-7 sm:h-7 object-contain drop-shadow-sm"
+                    className="w-10 h-10 sm:w-11 sm:h-11 object-contain drop-shadow-sm transition-transform duration-200"
                     referrerPolicy="no-referrer"
                     onError={(e) => {
                       (e.currentTarget as HTMLElement).style.display = 'none';
                       const fallback = e.currentTarget.nextElementSibling as HTMLElement | null;
-                      if (fallback) fallback.style.display = 'inline-block';
+                      if (fallback) fallback.style.display = 'flex';
                     }}
                   />
                   {/* Fallback Letter if image doesn't load */}
                   <span
                     style={{ display: 'none' }}
-                    className="font-bold text-lg uppercase text-[var(--md-sys-color-primary)]"
+                    className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-[var(--md-sys-color-primary-container)] text-[var(--md-sys-color-on-primary-container)] font-bold text-lg uppercase flex items-center justify-center shadow-xs"
                   >
                     {item.title.charAt(0)}
                   </span>
@@ -236,7 +240,7 @@ export const ShortcutsGrid: React.FC<ShortcutsGridProps> = ({
 
                 {/* Title (hidden if isOnlyIcons) */}
                 {!isOnlyIcons && (
-                  <span className="text-xs sm:text-sm font-medium text-[var(--md-sys-color-on-surface)] text-center truncate w-full px-1">
+                  <span className="text-xs sm:text-sm font-medium text-[var(--md-sys-color-on-surface)] text-center truncate w-full px-1 max-w-[80px]">
                     {item.title}
                   </span>
                 )}
@@ -246,26 +250,26 @@ export const ShortcutsGrid: React.FC<ShortcutsGridProps> = ({
         })}
 
         {/* Add Shortcut Tile */}
-        <button
-          onClick={openAddModal}
-          title="Add new shortcut"
-          className={`flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-[var(--md-sys-color-outline)] hover:border-[var(--md-sys-color-primary)] hover:bg-[var(--md-sys-color-hover-tint)] text-[var(--md-sys-color-on-surface-variant)] hover:text-[var(--md-sys-color-primary)] transition-all duration-200 cursor-pointer group ${
-            isOnlyIcons
-              ? 'p-2.5 sm:p-3 aspect-square h-full'
-              : 'p-3 h-full min-h-[96px]'
-          }`}
-        >
-          <div
-            className={`w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-[var(--md-sys-color-surface-container)] flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform ${
-              !isOnlyIcons ? 'mb-1.5' : ''
-            }`}
+        <div className={`relative group flex flex-col items-center justify-center ${isOnlyIcons ? 'p-1' : 'p-2'}`}>
+          <button
+            onClick={openAddModal}
+            title="Add new shortcut"
+            className="flex flex-col items-center justify-center transition-all duration-200 group-hover:scale-110 active:scale-95 cursor-pointer"
           >
-            <Plus className="w-5 h-5" />
-          </div>
-          {!isOnlyIcons && (
-            <span className="text-xs font-medium">Add Shortcut</span>
-          )}
-        </button>
+            <div
+              className={`w-14 h-14 sm:w-16 sm:h-16 rounded-2xl sm:rounded-3xl border-2 border-dashed border-[var(--md-sys-color-outline)]/70 hover:border-[var(--md-sys-color-primary)] hover:bg-[var(--md-sys-color-surface-container-high)]/60 flex items-center justify-center text-[var(--md-sys-color-on-surface-variant)] hover:text-[var(--md-sys-color-primary)] transition-all duration-200 ${
+                !isOnlyIcons ? 'mb-1.5' : ''
+              }`}
+            >
+              <Plus className="w-6 h-6" />
+            </div>
+            {!isOnlyIcons && (
+              <span className="text-xs font-medium text-[var(--md-sys-color-on-surface-variant)] max-w-[80px] truncate">
+                Add
+              </span>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Add Shortcut Modal */}

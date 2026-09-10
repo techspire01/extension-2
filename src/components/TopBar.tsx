@@ -4,9 +4,6 @@ import {
   Bookmark,
   Grid,
   Settings,
-  Download,
-  Maximize2,
-  Minimize2,
 } from 'lucide-react';
 import { AppSettings } from '../types';
 
@@ -17,7 +14,7 @@ interface TopBarProps {
   onOpenBookmarks: () => void;
   onOpenGoogleApps: () => void;
   onOpenSettings: () => void;
-  onOpenExtensionModal: () => void;
+  onOpenExtensionModal?: () => void;
 }
 
 export const TopBar: React.FC<TopBarProps> = ({
@@ -27,22 +24,7 @@ export const TopBar: React.FC<TopBarProps> = ({
   onOpenBookmarks,
   onOpenGoogleApps,
   onOpenSettings,
-  onOpenExtensionModal,
 }) => {
-  const [isFullscreen, setIsFullscreen] = React.useState(false);
-
-  const toggleFullscreen = () => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().catch(() => {});
-      setIsFullscreen(true);
-    } else {
-      if (document.exitFullscreen) {
-        document.exitFullscreen().catch(() => {});
-        setIsFullscreen(false);
-      }
-    }
-  };
-
   return (
     <header
       id="top-bar"
@@ -95,32 +77,8 @@ export const TopBar: React.FC<TopBarProps> = ({
         )}
       </div>
 
-      {/* Right controls: Extension download, Fullscreen, Settings */}
+      {/* Right controls: Settings */}
       <div className="flex items-center gap-2.5">
-        <button
-          id="extension-export-btn"
-          onClick={onOpenExtensionModal}
-          title="Get Browser Extension"
-          className="flex items-center gap-2 px-3.5 h-11 rounded-2xl bg-[var(--md-sys-color-primary-container)] text-[var(--md-sys-color-on-primary-container)] hover:shadow-md transition-all duration-200 cursor-pointer active:scale-95 text-sm font-medium"
-        >
-          <Download className="w-4 h-4" />
-          <span className="hidden sm:inline">Extension</span>
-        </button>
-
-        <button
-          id="fullscreen-toggle-btn"
-          onClick={toggleFullscreen}
-          title={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
-          className="flex items-center justify-center w-11 h-11 rounded-2xl bg-[var(--md-sys-color-primary-container)] text-[var(--md-sys-color-on-primary-container)] hover:shadow-md transition-all duration-200 cursor-pointer active:scale-95 group"
-        >
-          {isFullscreen ? (
-            <Minimize2 className="w-4 h-4" />
-          ) : (
-            <Maximize2 className="w-4 h-4" />
-          )}
-          <span className="sr-only">Toggle Fullscreen</span>
-        </button>
-
         <button
           id="menuButton"
           onClick={onOpenSettings}

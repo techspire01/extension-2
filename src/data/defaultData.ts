@@ -19,7 +19,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   wallpaperDim: 20,
 
   showShortcuts: true,
-  adaptiveIcons: true,
+  adaptiveIcons: false,
   shortcutsPerRow: 5,
   shortcutsOnlyIcons: true,
 

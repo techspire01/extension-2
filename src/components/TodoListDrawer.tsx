@@ -49,10 +49,14 @@ export const TodoListDrawer: React.FC<TodoListDrawerProps> = ({
   const activeCount = todos.filter((t) => !t.completed).length;
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-start bg-black/40 backdrop-blur-xs animate-in fade-in duration-200">
+    <div
+      onClick={onClose}
+      className="fixed inset-0 z-50 flex items-start justify-start bg-black/40 backdrop-blur-xs animate-in fade-in duration-200"
+    >
       <div
         id="todoContainer"
-        className="w-full max-w-sm h-full bg-[var(--md-sys-color-surface-container-high)] border-r border-[var(--md-sys-color-outline)] shadow-2xl flex flex-col p-6 animate-in slide-in-from-left duration-250"
+        onClick={(e) => e.stopPropagation()}
+        className="w-[600px] h-[600px] max-w-[calc(100vw-120px)] max-h-[calc(100vh-120px)] m-[60px] rounded-[60px] border-[5px] [border-style:groove] border-[var(--md-sys-color-outline)] bg-[var(--md-sys-color-surface-container-high)] shadow-2xl flex flex-col p-6 overflow-hidden animate-in zoom-in-95 duration-200"
       >
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-[var(--md-sys-color-outline)]/40">
