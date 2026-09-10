@@ -84,13 +84,13 @@ export const ClockWidget: React.FC<ClockWidgetProps> = ({
   return (
     <div
       id="clock-widget-container"
-      className="flex flex-col items-center justify-center select-none"
+      className="flex flex-col items-center md:items-start justify-center select-none"
     >
       {/* Clock display */}
       {settings.clockType === 'analog' ? (
         <div
           id="analogClock"
-          className="relative w-44 h-44 sm:w-52 sm:h-52 rounded-full border-4 border-[var(--md-sys-color-outline)] bg-[var(--md-sys-color-surface-container)]/80 backdrop-blur-md shadow-lg flex items-center justify-center transition-all duration-300 hover:scale-105"
+          className="relative w-36 h-36 sm:w-44 sm:h-44 rounded-full border-4 border-[var(--md-sys-color-outline)] bg-[var(--md-sys-color-surface-container)]/80 backdrop-blur-md shadow-lg flex items-center justify-center transition-all duration-300 hover:scale-105"
         >
           {/* Hour tick marks */}
           {[0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330].map(
@@ -152,7 +152,7 @@ export const ClockWidget: React.FC<ClockWidgetProps> = ({
           id="digitalClock"
           className="flex items-baseline gap-2 font-bold tracking-tight text-[var(--md-sys-color-on-surface)]"
         >
-          <span className="text-6xl sm:text-7xl md:text-8xl font-black drop-shadow-sm">
+          <span className="text-5xl sm:text-6xl md:text-7xl font-black drop-shadow-sm">
             {formattedHours}:{formattedMinutes}
           </span>
           {settings.showSeconds && (

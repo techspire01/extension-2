@@ -367,54 +367,6 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           </div>
         )}
       </div>
-
-      {/* Quick Search With Switcher row */}
-      {settings.showSearchEnginesBar && (
-        <div
-          id="search-with-container"
-          className="flex items-center justify-center flex-wrap gap-1.5 mt-3 select-none"
-        >
-          <span
-            id="searchWithHint"
-            className="text-xs font-medium text-[var(--md-sys-color-on-surface-variant)] mr-1 hidden sm:inline"
-          >
-            Search with:
-          </span>
-          {(
-            [
-              'google',
-              'duckduckgo',
-              'bing',
-              'brave',
-              'youtube',
-              'reddit',
-              'wikipedia',
-            ] as SearchEngineKey[]
-          ).map((key) => {
-            const isSelected = selectedEngine === key && !isAiMode;
-            return (
-              <button
-                key={key}
-                type="button"
-                onClick={() => {
-                  setSelectedEngine(key);
-                  setIsAiMode(false);
-                  if (query.trim()) {
-                    handleExecuteSearch(query);
-                  }
-                }}
-                className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 cursor-pointer ${
-                  isSelected
-                    ? 'bg-[var(--md-sys-color-primary)] text-[var(--md-sys-color-on-primary)] shadow-sm'
-                    : 'bg-[var(--md-sys-color-surface-container)]/70 text-[var(--md-sys-color-on-surface-variant)] hover:bg-[var(--md-sys-color-hover-tint)] hover:text-[var(--md-sys-color-on-surface)]'
-                }`}
-              >
-                {SEARCH_ENGINES[key].name}
-              </button>
-            );
-          })}
-        </div>
-      )}
     </div>
   );
 };

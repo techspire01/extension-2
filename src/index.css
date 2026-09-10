@@ -52,6 +52,18 @@ body {
   background: var(--md-sys-color-on-surface-variant);
 }
 
+/* Completely hide scrollbars utility */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 @keyframes spin-slow {
   from {
     transform: rotate(0deg);

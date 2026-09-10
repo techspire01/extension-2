@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   AppSettings,
   ShortcutItem,
@@ -86,6 +86,51 @@ export default function App() {
     }
     return DEFAULT_BOOKMARKS;
   });
+
+  // 4b. Bookmark Folders State
+  const [bookmarkFolders, setBookmarkFolders] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem('mynt_bookmark_folders');
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    } catch {
+      // fallback
+    }
+    const initial = Array.from(
+      new Set(DEFAULT_BOOKMARKS.map((b) => b.category || 'General').filter(Boolean))
+    );
+    return initial.length > 0 ? initial : ['General', 'Development', 'Design', 'Reading'];
+  });
+
+  const [selectedFolderFilter, setSelectedFolderFilter] = useState<string | null>(null);
+
+  useEffect(() => {
+    localStorage.setItem('mynt_bookmark_folders', JSON.stringify(bookmarkFolders));
+  }, [bookmarkFolders]);
+
+  // Derived unique bookmark folders combining stored folders and any existing bookmark category
+  const allBookmarkFolders = useMemo(() => {
+    const set = new Set<string>();
+    bookmarkFolders.forEach((f) => {
+      if (f && f.trim()) set.add(f.trim());
+    });
+    bookmarks.forEach((b) => {
+      if (b.category && b.category.trim()) set.add(b.category.trim());
+    });
+    return Array.from(set);
+  }, [bookmarkFolders, bookmarks]);
+
+  // Count items per folder
+  const folderCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    allBookmarkFolders.forEach((folder) => {
+      counts[folder] = bookmarks.filter(
+        (b) => (b.category || 'General').toLowerCase() === folder.toLowerCase()
+      ).length;
+    });
+    return counts;
+  }, [allBookmarkFolders, bookmarks]);
 
   // 5. AI Tools State
   const [aiTools, setAiTools] = useState<AIToolItem[]>(() => {
@@ -215,6 +260,41 @@ export default function App() {
     setBookmarks((prev) => prev.filter((b) => b.id !== id));
   };
 
+  // Folder actions
+  const handleAddFolder = (folderName: string) => {
+    const trimmed = folderName.trim();
+    if (!trimmed) return;
+    setBookmarkFolders((prev) => {
+      const exists = prev.some((f) => f.toLowerCase() === trimmed.toLowerCase());
+      if (exists) return prev;
+      return [...prev, trimmed];
+    });
+  };
+
+  const handleDeleteFolder = (folderName: string) => {
+    const lower = folderName.toLowerCase();
+    setBookmarkFolders((prev) => prev.filter((f) => f.toLowerCase() !== lower));
+    // Clear/default category for bookmarks assigned to deleted folder so it doesn't immediately resurrect
+    setBookmarks((prev) =>
+      prev.map((b) =>
+        (b.category || '').toLowerCase() === lower ? { ...b, category: 'General' } : b
+      )
+    );
+    if (selectedFolderFilter?.toLowerCase() === lower) {
+      setSelectedFolderFilter(null);
+    }
+  };
+
+  const handleSelectBookmarkFolder = (folder: string) => {
+    setSelectedFolderFilter(folder);
+    setIsBookmarksOpen(true);
+  };
+
+  const handleOpenAddFolder = () => {
+    setSelectedFolderFilter(null);
+    setIsBookmarksOpen(true);
+  };
+
   // AI Tool toggle
   const handleToggleAITool = (id: string) => {
     setAiTools((prev) =>
@@ -247,8 +327,19 @@ export default function App() {
       <TopBar
         settings={settings}
         unreadTodosCount={unreadTodosCount}
+        bookmarkFolders={allBookmarkFolders}
+        folderCounts={folderCounts}
+        bookmarks={bookmarks}
         onOpenTodoList={() => setIsTodoListOpen(true)}
-        onOpenBookmarks={() => setIsBookmarksOpen(true)}
+        onOpenBookmarks={() => {
+          setSelectedFolderFilter(null);
+          setIsBookmarksOpen(true);
+        }}
+        onSelectBookmarkFolder={handleSelectBookmarkFolder}
+        onOpenAddFolder={handleOpenAddFolder}
+        onAddBookmark={handleAddBookmark}
+        onDeleteBookmark={handleDeleteBookmark}
+        onDeleteFolder={handleDeleteFolder}
         onOpenGoogleApps={() => setIsGoogleAppsOpen(true)}
         onOpenSettings={() => setIsSettingsOpen(true)}
         onOpenExtensionModal={() => setIsExtensionModalOpen(true)}
@@ -256,10 +347,10 @@ export default function App() {
 
       {/* Main Center Content */}
       <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 py-4 max-w-5xl mx-auto w-full">
-        {/* Split / Responsive Hero (Clock & Weather) */}
-        <div className="w-full flex flex-col md:flex-row items-center justify-center gap-6 md:gap-12 mb-6">
-          {/* Left / Center: Clock & Greeting */}
-          <div className="flex-1 flex justify-center">
+        {/* Main Hero Row: Clock on the left side of Search Bar, with Weather on the right */}
+        <div className="w-full flex flex-col md:flex-row items-center justify-center gap-6 lg:gap-8 mb-5">
+          {/* Left: Clock Widget */}
+          <div className="shrink-0 flex justify-center">
             <ClockWidget
               settings={settings}
               onUpdateCustomText={(text) =>
@@ -271,7 +362,17 @@ export default function App() {
             />
           </div>
 
-          {/* Right / Secondary: Live Weather */}
+          {/* Center: Search Bar */}
+          <div className="flex-1 w-full max-w-2xl flex flex-col items-center">
+            <SearchBar
+              settings={settings}
+              onUpdateEngine={(engine: SearchEngineKey) =>
+                handleUpdateSettings({ defaultSearchEngine: engine })
+              }
+            />
+          </div>
+
+          {/* Right: Live Weather (if enabled) */}
           {settings.showWeather && (
             <div className="shrink-0 flex justify-center">
               <WeatherWidget
@@ -281,14 +382,6 @@ export default function App() {
             </div>
           )}
         </div>
-
-        {/* Material You Pill Search Bar */}
-        <SearchBar
-          settings={settings}
-          onUpdateEngine={(engine: SearchEngineKey) =>
-            handleUpdateSettings({ defaultSearchEngine: engine })
-          }
-        />
 
         {/* Motivational Quotes */}
         <QuotesWidget settings={settings} />
@@ -327,6 +420,11 @@ export default function App() {
         isOpen={isBookmarksOpen}
         onClose={() => setIsBookmarksOpen(false)}
         bookmarks={bookmarks}
+        folders={allBookmarkFolders}
+        selectedFolderFilter={selectedFolderFilter}
+        onSelectFolderFilter={setSelectedFolderFilter}
+        onAddFolder={handleAddFolder}
+        onDeleteFolder={handleDeleteFolder}
         onAddBookmark={handleAddBookmark}
         onUpdateBookmark={handleUpdateBookmark}
         onDeleteBookmark={handleDeleteBookmark}
