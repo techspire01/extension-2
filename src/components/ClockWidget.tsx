@@ -64,6 +64,11 @@ export const ClockWidget: React.FC<ClockWidgetProps> = ({
   const formattedMinutes = String(minutes).padStart(2, '0');
   const formattedSeconds = String(seconds).padStart(2, '0');
 
+  // Dedicated 12-hour digital time for analog clock sub-display
+  const hours12 = hours % 12 || 12;
+  const formatted12Hours = String(hours12).padStart(2, '0');
+  const ampm12 = hours >= 12 ? 'PM' : 'AM';
+
   // Date formatting
   const formattedDate = time.toLocaleDateString(undefined, {
     weekday: 'long',
@@ -88,8 +93,9 @@ export const ClockWidget: React.FC<ClockWidgetProps> = ({
     >
       {/* Clock display */}
       {settings.clockType === 'analog' ? (
-        <div
-          id="analogClock"
+        <>
+          <div
+            id="analogClock"
           className="relative w-36 h-36 sm:w-44 sm:h-44 rounded-full border-4 border-[var(--md-sys-color-outline)] bg-[var(--md-sys-color-surface-container)]/80 backdrop-blur-md shadow-lg flex items-center justify-center transition-all duration-300 hover:scale-105"
         >
           {/* Hour tick marks */}
@@ -147,6 +153,20 @@ export const ClockWidget: React.FC<ClockWidgetProps> = ({
           {/* Center Hub */}
           <div className="absolute w-4 h-4 rounded-full bg-[var(--md-sys-color-primary)] border-2 border-white shadow-md z-10" />
         </div>
+
+        {/* 12-hr Digital Time including seconds below analog clock */}
+        <div
+          id="analog-digital-time"
+          className="mt-2.5 px-3.5 py-1 rounded-2xl bg-[var(--md-sys-color-surface-container)]/80 backdrop-blur-md border border-[var(--md-sys-color-outline)]/40 shadow-xs flex items-center gap-1.5 text-sm sm:text-base font-bold text-[var(--md-sys-color-on-surface)] tracking-wide"
+        >
+          <span>
+            {formatted12Hours}:{formattedMinutes}:{formattedSeconds}
+          </span>
+          <span className="text-[11px] font-semibold text-[var(--md-sys-color-primary)]">
+            {ampm12}
+          </span>
+        </div>
+        </>
       ) : (
         <div
           id="digitalClock"

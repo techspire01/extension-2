@@ -3,7 +3,6 @@ import {
   Search,
   Mic,
   MicOff,
-  Sparkles,
   ChevronDown,
   ArrowRight,
   History,
@@ -38,7 +37,6 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   );
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isListening, setIsListening] = useState(false);
-  const [isAiMode, setIsAiMode] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [filteredSuggestions, setFilteredSuggestions] = useState<string[]>([]);
   const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
@@ -160,14 +158,6 @@ export const SearchBar: React.FC<SearchBarProps> = ({
       return;
     }
 
-    // AI Mode redirect or search engine redirect
-    if (isAiMode) {
-      window.location.href = `https://gemini.google.com/app?q=${encodeURIComponent(
-        trimmed
-      )}`;
-      return;
-    }
-
     const engineObj = SEARCH_ENGINES[selectedEngine] || SEARCH_ENGINES.google;
     window.location.href = `${engineObj.searchUrl}${encodeURIComponent(trimmed)}`;
   };
@@ -274,15 +264,11 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           }}
           onFocus={() => setShowSuggestions(true)}
           onKeyDown={handleKeyDown}
-          placeholder={
-            isAiMode
-              ? 'Ask Google Gemini AI anything...'
-              : currentEngineConfig.placeholder
-          }
+          placeholder={currentEngineConfig.placeholder}
           className="flex-1 bg-transparent px-3 text-sm sm:text-base text-[var(--md-sys-color-on-surface)] placeholder-[var(--md-sys-color-on-surface-variant)]/70 outline-none font-normal"
         />
 
-        {/* Action icons: Voice, AI Mode, Search */}
+        {/* Action icons: Voice, Search */}
         <div className="flex items-center gap-1 sm:gap-2 pr-1">
           {/* Voice Search */}
           {settings.showVoiceSearch && (
@@ -302,24 +288,6 @@ export const SearchBar: React.FC<SearchBarProps> = ({
               ) : (
                 <Mic className="w-4 h-4" />
               )}
-            </button>
-          )}
-
-          {/* AI Mode Toggle */}
-          {settings.showAIModeBtn && (
-            <button
-              id="aiModeIcon"
-              type="button"
-              onClick={() => setIsAiMode(!isAiMode)}
-              title="Google AI Search Mode"
-              className={`flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 cursor-pointer ${
-                isAiMode
-                  ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-md'
-                  : 'text-[var(--md-sys-color-on-surface-variant)] hover:text-[var(--md-sys-color-primary)] hover:bg-[var(--md-sys-color-hover-tint)]'
-              }`}
-            >
-              <Sparkles className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">AI</span>
             </button>
           )}
 

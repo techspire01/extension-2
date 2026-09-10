@@ -18,6 +18,7 @@ import {
   DEFAULT_TODOS,
   DEFAULT_BOOKMARKS,
   AI_TOOLS_LIST,
+  GOOGLE_APPS,
 } from './data/defaultData';
 import { applyThemeVariables } from './theme/materialTheme';
 
@@ -25,7 +26,6 @@ import { TopBar } from './components/TopBar';
 import { ClockWidget } from './components/ClockWidget';
 import { WeatherWidget } from './components/WeatherWidget';
 import { SearchBar } from './components/SearchBar';
-import { QuotesWidget } from './components/QuotesWidget';
 import { ShortcutsGrid } from './components/ShortcutsGrid';
 import { AIToolsDock } from './components/AIToolsDock';
 import { TodoListDrawer } from './components/TodoListDrawer';
@@ -33,6 +33,8 @@ import { BookmarksDrawer } from './components/BookmarksDrawer';
 import { GoogleAppsMenu } from './components/GoogleAppsMenu';
 import { SettingsDrawer } from './components/SettingsDrawer';
 import { ExtensionExportModal } from './components/ExtensionExportModal';
+import { GoogleAppItem } from './types';
+import { parseChromeBookmarksTree } from './utils/browserBookmarks';
 
 export default function App() {
   // 1. Settings State
@@ -132,6 +134,50 @@ export default function App() {
     return counts;
   }, [allBookmarkFolders, bookmarks]);
 
+  // Automatically load and sync browser native bookmarks if running as an extension
+  useEffect(() => {
+    if (
+      typeof window !== 'undefined' &&
+      (window as any).chrome?.bookmarks?.getTree
+    ) {
+      const chromeApi = (window as any).chrome;
+      const syncNativeBookmarks = () => {
+        try {
+          chromeApi.bookmarks.getTree((tree: any[]) => {
+            if (tree && Array.isArray(tree) && tree.length > 0) {
+              const { folders, bookmarks: browserBookmarks } =
+                parseChromeBookmarksTree(tree);
+              if (folders.length > 0) {
+                setBookmarkFolders(folders);
+              }
+              if (browserBookmarks.length > 0) {
+                setBookmarks(browserBookmarks);
+              }
+            }
+          });
+        } catch (e) {
+          console.warn('Native bookmarks sync:', e);
+        }
+      };
+
+      syncNativeBookmarks();
+
+      chromeApi.bookmarks.onCreated?.addListener(syncNativeBookmarks);
+      chromeApi.bookmarks.onRemoved?.addListener(syncNativeBookmarks);
+      chromeApi.bookmarks.onChanged?.addListener(syncNativeBookmarks);
+      chromeApi.bookmarks.onMoved?.addListener(syncNativeBookmarks);
+
+      return () => {
+        try {
+          chromeApi.bookmarks.onCreated?.removeListener(syncNativeBookmarks);
+          chromeApi.bookmarks.onRemoved?.removeListener(syncNativeBookmarks);
+          chromeApi.bookmarks.onChanged?.removeListener(syncNativeBookmarks);
+          chromeApi.bookmarks.onMoved?.removeListener(syncNativeBookmarks);
+        } catch {}
+      };
+    }
+  }, []);
+
   // 5. AI Tools State
   const [aiTools, setAiTools] = useState<AIToolItem[]>(() => {
     try {
@@ -144,6 +190,23 @@ export default function App() {
     }
     return AI_TOOLS_LIST;
   });
+
+  // 6. Google Apps Launcher State
+  const [googleApps, setGoogleApps] = useState<GoogleAppItem[]>(() => {
+    try {
+      const saved = localStorage.getItem('mynt_google_apps');
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    } catch {
+      // fallback
+    }
+    return GOOGLE_APPS;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('mynt_google_apps', JSON.stringify(googleApps));
+  }, [googleApps]);
 
   // Active Drawers / Modals
   const [isTodoListOpen, setIsTodoListOpen] = useState(false);
@@ -343,6 +406,13 @@ export default function App() {
         onOpenGoogleApps={() => setIsGoogleAppsOpen(true)}
         onOpenSettings={() => setIsSettingsOpen(true)}
         onOpenExtensionModal={() => setIsExtensionModalOpen(true)}
+        isAnyDrawerOpen={
+          isTodoListOpen ||
+          isBookmarksOpen ||
+          isGoogleAppsOpen ||
+          isSettingsOpen ||
+          isExtensionModalOpen
+        }
       />
 
       {/* Main Center Content */}
@@ -382,9 +452,6 @@ export default function App() {
             </div>
           )}
         </div>
-
-        {/* Motivational Quotes */}
-        <QuotesWidget settings={settings} />
 
         {/* Customizable Quick Access Dashboard (Shortcuts Grid) */}
         <ShortcutsGrid
@@ -433,6 +500,8 @@ export default function App() {
       <GoogleAppsMenu
         isOpen={isGoogleAppsOpen}
         onClose={() => setIsGoogleAppsOpen(false)}
+        apps={googleApps}
+        onOpenSettings={() => setIsSettingsOpen(true)}
       />
 
       <SettingsDrawer
@@ -443,6 +512,8 @@ export default function App() {
         aiTools={aiTools}
         onToggleAITool={handleToggleAITool}
         onResetSettings={handleResetSettings}
+        googleApps={googleApps}
+        onUpdateGoogleApps={setGoogleApps}
       />
 
       <ExtensionExportModal

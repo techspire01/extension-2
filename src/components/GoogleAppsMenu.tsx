@@ -14,18 +14,33 @@ import {
   Languages,
   Newspaper,
   PlaySquare,
+  Globe,
+  Compass,
+  BookOpen,
+  ShoppingBag,
+  MessageCircle,
+  Music,
+  Code,
+  Bot,
+  Sparkles,
+  Settings,
   X,
 } from 'lucide-react';
 import { GOOGLE_APPS } from '../data/defaultData';
+import { GoogleAppItem } from '../types';
 
 interface GoogleAppsMenuProps {
   isOpen: boolean;
   onClose: () => void;
+  apps?: GoogleAppItem[];
+  onOpenSettings?: () => void;
 }
 
 export const GoogleAppsMenu: React.FC<GoogleAppsMenuProps> = ({
   isOpen,
   onClose,
+  apps = GOOGLE_APPS,
+  onOpenSettings,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -46,7 +61,15 @@ export const GoogleAppsMenu: React.FC<GoogleAppsMenuProps> = ({
 
   if (!isOpen) return null;
 
-  const renderIcon = (name: string) => {
+  const getDomain = (url: string) => {
+    try {
+      return new URL(url).hostname;
+    } catch {
+      return '';
+    }
+  };
+
+  const renderIcon = (name: string, url: string) => {
     switch (name) {
       case 'Search':
         return <Search className="w-5 h-5 text-blue-500" />;
@@ -76,8 +99,41 @@ export const GoogleAppsMenu: React.FC<GoogleAppsMenuProps> = ({
         return <Languages className="w-5 h-5 text-blue-500" />;
       case 'Newspaper':
         return <Newspaper className="w-5 h-5 text-red-500" />;
-      default:
-        return <Search className="w-5 h-5 text-blue-500" />;
+      case 'Globe':
+        return <Globe className="w-5 h-5 text-sky-500" />;
+      case 'Compass':
+        return <Compass className="w-5 h-5 text-cyan-500" />;
+      case 'BookOpen':
+        return <BookOpen className="w-5 h-5 text-indigo-500" />;
+      case 'ShoppingBag':
+        return <ShoppingBag className="w-5 h-5 text-emerald-500" />;
+      case 'MessageCircle':
+        return <MessageCircle className="w-5 h-5 text-emerald-600" />;
+      case 'Music':
+        return <Music className="w-5 h-5 text-pink-500" />;
+      case 'Code':
+        return <Code className="w-5 h-5 text-violet-500" />;
+      case 'Bot':
+        return <Bot className="w-5 h-5 text-purple-500" />;
+      case 'Sparkles':
+        return <Sparkles className="w-5 h-5 text-amber-500" />;
+      default: {
+        const domain = getDomain(url);
+        if (domain) {
+          return (
+            <img
+              src={`https://www.google.com/s2/favicons?domain=${domain}&sz=64`}
+              alt=""
+              className="w-5 h-5 object-contain rounded-xs"
+              referrerPolicy="no-referrer"
+              onError={(e) => {
+                (e.currentTarget as HTMLElement).style.display = 'none';
+              }}
+            />
+          );
+        }
+        return <Globe className="w-5 h-5 text-blue-500" />;
+      }
     }
   };
 
@@ -90,18 +146,32 @@ export const GoogleAppsMenu: React.FC<GoogleAppsMenuProps> = ({
       >
         <div className="flex items-center justify-between pb-3 mb-3 border-b border-[var(--md-sys-color-outline)]/40">
           <span className="text-xs font-bold uppercase tracking-wider text-[var(--md-sys-color-on-surface-variant)]">
-            Google Apps
+            Apps
           </span>
-          <button
-            onClick={onClose}
-            className="p-1 rounded-full text-[var(--md-sys-color-on-surface-variant)] hover:bg-[var(--md-sys-color-hover-tint)] cursor-pointer"
-          >
-            <X className="w-4 h-4" />
-          </button>
+          <div className="flex items-center gap-1">
+            {onOpenSettings && (
+              <button
+                onClick={() => {
+                  onClose();
+                  onOpenSettings();
+                }}
+                title="Edit Apps in Settings"
+                className="p-1.5 rounded-full text-[var(--md-sys-color-on-surface-variant)] hover:bg-[var(--md-sys-color-hover-tint)] cursor-pointer"
+              >
+                <Settings className="w-4 h-4" />
+              </button>
+            )}
+            <button
+              onClick={onClose}
+              className="p-1 rounded-full text-[var(--md-sys-color-on-surface-variant)] hover:bg-[var(--md-sys-color-hover-tint)] cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
         <div className="grid grid-cols-3 gap-2.5 max-h-96 overflow-y-auto pr-1 custom-scrollbar">
-          {GOOGLE_APPS.map((app) => (
+          {apps.map((app) => (
             <a
               key={app.id}
               href={app.url}
@@ -110,7 +180,7 @@ export const GoogleAppsMenu: React.FC<GoogleAppsMenuProps> = ({
               className="flex flex-col items-center justify-center p-3 rounded-2xl hover:bg-[var(--md-sys-color-hover-tint)] text-[var(--md-sys-color-on-surface)] transition-all active:scale-95 group select-none"
             >
               <div className="w-11 h-11 rounded-2xl bg-[var(--md-sys-color-surface)] shadow-xs border border-[var(--md-sys-color-outline)]/30 flex items-center justify-center mb-1.5 group-hover:scale-110 transition-transform">
-                {renderIcon(app.iconName)}
+                {renderIcon(app.iconName, app.url)}
               </div>
               <span className="text-xs font-medium text-center truncate w-full">
                 {app.name}
@@ -119,14 +189,27 @@ export const GoogleAppsMenu: React.FC<GoogleAppsMenuProps> = ({
           ))}
         </div>
 
-        <div className="mt-4 pt-3 border-t border-[var(--md-sys-color-outline)]/40 text-center">
+        <div className="mt-4 pt-3 border-t border-[var(--md-sys-color-outline)]/40 flex items-center justify-between text-xs">
+          {onOpenSettings ? (
+            <button
+              onClick={() => {
+                onClose();
+                onOpenSettings();
+              }}
+              className="font-semibold text-[var(--md-sys-color-primary)] hover:underline cursor-pointer"
+            >
+              Customize in Settings →
+            </button>
+          ) : (
+            <span />
+          )}
           <a
             href="https://about.google/products/"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs font-semibold text-[var(--md-sys-color-primary)] hover:underline"
+            className="text-[11px] text-[var(--md-sys-color-on-surface-variant)] hover:underline"
           >
-            More from Google →
+            Google Products
           </a>
         </div>
       </div>

@@ -35,7 +35,8 @@ export const ExtensionExportModal: React.FC<ExtensionExportModalProps> = ({
     "newtab": "index.html"
   },
   "permissions": [
-    "storage"
+    "storage",
+    "bookmarks"
   ]
 }`;
 

@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   X,
   Palette,
@@ -17,6 +17,13 @@ import {
   Sliders,
   Eye,
   SlidersHorizontal,
+  Grid,
+  Plus,
+  Trash2,
+  Edit2,
+  ArrowUp,
+  ArrowDown,
+  Check,
 } from 'lucide-react';
 import {
   AppSettings,
@@ -25,9 +32,36 @@ import {
   ClockType,
   SearchEngineKey,
   AIToolItem,
+  GoogleAppItem,
 } from '../types';
 import { PRESET_THEMES } from '../theme/materialTheme';
-import { SEARCH_ENGINES } from '../data/defaultData';
+import { SEARCH_ENGINES, GOOGLE_APPS } from '../data/defaultData';
+
+const APP_ICONS_LIST = [
+  'Search',
+  'Mail',
+  'PlaySquare',
+  'HardDrive',
+  'FileText',
+  'Table',
+  'Presentation',
+  'Calendar',
+  'Video',
+  'MapPin',
+  'Image',
+  'Lightbulb',
+  'Languages',
+  'Newspaper',
+  'Globe',
+  'Compass',
+  'BookOpen',
+  'ShoppingBag',
+  'MessageCircle',
+  'Music',
+  'Code',
+  'Bot',
+  'Sparkles',
+];
 
 interface SettingsDrawerProps {
   isOpen: boolean;
@@ -37,6 +71,8 @@ interface SettingsDrawerProps {
   aiTools: AIToolItem[];
   onToggleAITool: (id: string) => void;
   onResetSettings: () => void;
+  googleApps?: GoogleAppItem[];
+  onUpdateGoogleApps?: (apps: GoogleAppItem[]) => void;
 }
 
 export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({
@@ -47,9 +83,90 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({
   aiTools,
   onToggleAITool,
   onResetSettings,
+  googleApps = GOOGLE_APPS,
+  onUpdateGoogleApps,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const restoreInputRef = useRef<HTMLInputElement>(null);
+
+  // Google Apps Launcher Editor State
+  const [isAddingApp, setIsAddingApp] = useState(false);
+  const [editingAppId, setEditingAppId] = useState<string | null>(null);
+  const [appName, setAppName] = useState('');
+  const [appUrl, setAppUrl] = useState('');
+  const [appIcon, setAppIcon] = useState('Globe');
+
+  const handleStartAddApp = () => {
+    setIsAddingApp(true);
+    setEditingAppId(null);
+    setAppName('');
+    setAppUrl('');
+    setAppIcon('Globe');
+  };
+
+  const handleStartEditApp = (app: GoogleAppItem) => {
+    setEditingAppId(app.id);
+    setIsAddingApp(false);
+    setAppName(app.name);
+    setAppUrl(app.url);
+    setAppIcon(app.iconName || 'Globe');
+  };
+
+  const handleSaveApp = () => {
+    if (!appName.trim() || !appUrl.trim()) return;
+    let formattedUrl = appUrl.trim();
+    if (!formattedUrl.startsWith('http://') && !formattedUrl.startsWith('https://')) {
+      formattedUrl = 'https://' + formattedUrl;
+    }
+
+    if (editingAppId) {
+      const updated = googleApps.map((app) =>
+        app.id === editingAppId
+          ? {
+              ...app,
+              name: appName.trim(),
+              url: formattedUrl,
+              iconName: appIcon,
+            }
+          : app
+      );
+      onUpdateGoogleApps?.(updated);
+      setEditingAppId(null);
+    } else {
+      const newApp: GoogleAppItem = {
+        id: `gapp-${Date.now()}`,
+        name: appName.trim(),
+        url: formattedUrl,
+        iconBg: '#4285f4',
+        iconColor: '#ffffff',
+        iconName: appIcon,
+      };
+      onUpdateGoogleApps?.([...googleApps, newApp]);
+      setIsAddingApp(false);
+    }
+    setAppName('');
+    setAppUrl('');
+  };
+
+  const handleDeleteApp = (id: string) => {
+    const updated = googleApps.filter((app) => app.id !== id);
+    onUpdateGoogleApps?.(updated);
+  };
+
+  const handleMoveApp = (index: number, direction: 'up' | 'down') => {
+    const newApps = [...googleApps];
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= newApps.length) return;
+    const [moved] = newApps.splice(index, 1);
+    newApps.splice(targetIndex, 0, moved);
+    onUpdateGoogleApps?.(newApps);
+  };
+
+  const handleResetApps = () => {
+    if (window.confirm('Reset apps launcher to default Google apps?')) {
+      onUpdateGoogleApps?.(GOOGLE_APPS);
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -71,9 +188,13 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({
 
   // Backup settings JSON
   const handleBackup = () => {
+    const backupData = {
+      settings,
+      googleApps,
+    };
     const dataStr =
       'data:text/json;charset=utf-8,' +
-      encodeURIComponent(JSON.stringify(settings, null, 2));
+      encodeURIComponent(JSON.stringify(backupData, null, 2));
     const downloadAnchor = document.createElement('a');
     downloadAnchor.setAttribute('href', dataStr);
     downloadAnchor.setAttribute('download', 'material-you-new-tab-backup.json');
@@ -91,7 +212,14 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({
     reader.onload = (event) => {
       try {
         const parsed = JSON.parse(event.target?.result as string);
-        onUpdateSettings(parsed);
+        if (parsed.settings) {
+          onUpdateSettings(parsed.settings);
+          if (parsed.googleApps && onUpdateGoogleApps) {
+            onUpdateGoogleApps(parsed.googleApps);
+          }
+        } else {
+          onUpdateSettings(parsed);
+        }
         alert('Settings successfully restored!');
       } catch {
         alert('Invalid settings backup file.');
@@ -743,25 +871,6 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({
 
               <label className="flex items-center justify-between p-2.5 rounded-2xl bg-[var(--md-sys-color-surface)] border border-[var(--md-sys-color-outline)]/40 cursor-pointer">
                 <div>
-                  <div id="aiModeIconTitle" className="font-semibold text-xs text-[var(--md-sys-color-on-surface)]">
-                    Google AI Search Mode
-                  </div>
-                  <div id="aiModeIconInfo" className="text-[11px] text-[var(--md-sys-color-on-surface-variant)]">
-                    Quick AI query button
-                  </div>
-                </div>
-                <input
-                  type="checkbox"
-                  checked={settings.showAIModeBtn}
-                  onChange={(e) =>
-                    onUpdateSettings({ showAIModeBtn: e.target.checked })
-                  }
-                  className="w-4 h-4 accent-[var(--md-sys-color-primary)] cursor-pointer"
-                />
-              </label>
-
-              <label className="flex items-center justify-between p-2.5 rounded-2xl bg-[var(--md-sys-color-surface)] border border-[var(--md-sys-color-outline)]/40 cursor-pointer">
-                <div>
                   <div id="search_suggestions_button" className="font-semibold text-xs text-[var(--md-sys-color-on-surface)]">
                     Search Suggestions
                   </div>
@@ -854,6 +963,217 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({
                   </div>
                 </div>
               )}
+            </div>
+          </section>
+
+          {/* SECTION: APPS LAUNCHER (GOOGLE APPS) */}
+          <section className="space-y-3 pt-3 border-t border-[var(--md-sys-color-outline)]/40">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[var(--md-sys-color-primary)]">
+                <Grid className="w-4 h-4" />
+                <span>Apps Launcher</span>
+              </div>
+              <span className="text-[11px] px-2 py-0.5 rounded-full bg-[var(--md-sys-color-primary-container)] text-[var(--md-sys-color-on-primary-container)] font-medium">
+                {googleApps.length} apps
+              </span>
+            </div>
+
+            <label className="flex items-center justify-between p-2.5 rounded-2xl bg-[var(--md-sys-color-surface)] border border-[var(--md-sys-color-outline)]/40 cursor-pointer">
+              <div>
+                <div className="font-semibold text-xs text-[var(--md-sys-color-on-surface)]">
+                  Show Apps Launcher Button
+                </div>
+                <div className="text-[11px] text-[var(--md-sys-color-on-surface-variant)]">
+                  Displays the 3×3 grid icon on the top bar
+                </div>
+              </div>
+              <input
+                type="checkbox"
+                checked={settings.showGoogleApps}
+                onChange={(e) =>
+                  onUpdateSettings({ showGoogleApps: e.target.checked })
+                }
+                className="w-4 h-4 accent-[var(--md-sys-color-primary)] cursor-pointer"
+              />
+            </label>
+
+            <div className="p-3 rounded-2xl bg-[var(--md-sys-color-surface)] border border-[var(--md-sys-color-outline)]/40 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-semibold text-[var(--md-sys-color-on-surface-variant)] uppercase">
+                  Manage Apps
+                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleResetApps}
+                    title="Reset to default Google apps"
+                    className="text-[11px] font-medium text-[var(--md-sys-color-on-surface-variant)] hover:text-[var(--md-sys-color-primary)] hover:underline cursor-pointer"
+                  >
+                    Reset
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleStartAddApp}
+                    className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-[var(--md-sys-color-primary)] text-[var(--md-sys-color-on-primary)] text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Add App</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Add / Edit App Form */}
+              {(isAddingApp || editingAppId) && (
+                <div className="p-3 rounded-xl bg-[var(--md-sys-color-surface-container)] border border-[var(--md-sys-color-primary)]/40 space-y-2.5 animate-in fade-in duration-150">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-[var(--md-sys-color-primary)]">
+                      {editingAppId ? 'Edit App' : 'Add New App'}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsAddingApp(false);
+                        setEditingAppId(null);
+                      }}
+                      className="p-1 text-[var(--md-sys-color-on-surface-variant)] hover:text-[var(--md-sys-color-on-surface)] cursor-pointer"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-[10px] uppercase font-semibold text-[var(--md-sys-color-on-surface-variant)] mb-1">
+                        App Name
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. GitHub, Notion, Gmail"
+                        value={appName}
+                        onChange={(e) => setAppName(e.target.value)}
+                        className="w-full px-2.5 py-1.5 rounded-lg bg-[var(--md-sys-color-surface)] border border-[var(--md-sys-color-outline)] text-xs text-[var(--md-sys-color-on-surface)] outline-none focus:border-[var(--md-sys-color-primary)]"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] uppercase font-semibold text-[var(--md-sys-color-on-surface-variant)] mb-1">
+                        URL / Link
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. https://github.com"
+                        value={appUrl}
+                        onChange={(e) => setAppUrl(e.target.value)}
+                        className="w-full px-2.5 py-1.5 rounded-lg bg-[var(--md-sys-color-surface)] border border-[var(--md-sys-color-outline)] text-xs text-[var(--md-sys-color-on-surface)] outline-none focus:border-[var(--md-sys-color-primary)]"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] uppercase font-semibold text-[var(--md-sys-color-on-surface-variant)] mb-1">
+                      Choose Icon: <span className="text-[var(--md-sys-color-primary)] font-bold">{appIcon}</span>
+                    </label>
+                    <div className="flex flex-wrap gap-1 max-h-24 overflow-y-auto p-1 rounded-lg bg-[var(--md-sys-color-surface)] border border-[var(--md-sys-color-outline)]/40 custom-scrollbar">
+                      {APP_ICONS_LIST.map((ic) => (
+                        <button
+                          key={ic}
+                          type="button"
+                          onClick={() => setAppIcon(ic)}
+                          className={`px-2 py-0.5 rounded text-[11px] font-medium cursor-pointer transition-all ${
+                            appIcon === ic
+                              ? 'bg-[var(--md-sys-color-primary)] text-[var(--md-sys-color-on-primary)] shadow-xs'
+                              : 'text-[var(--md-sys-color-on-surface-variant)] hover:bg-[var(--md-sys-color-hover-tint)]'
+                          }`}
+                        >
+                          {ic}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsAddingApp(false);
+                        setEditingAppId(null);
+                      }}
+                      className="px-3 py-1.5 rounded-lg text-xs font-semibold text-[var(--md-sys-color-on-surface-variant)] hover:bg-[var(--md-sys-color-hover-tint)] cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      disabled={!appName.trim() || !appUrl.trim()}
+                      onClick={handleSaveApp}
+                      className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[var(--md-sys-color-primary)] text-[var(--md-sys-color-on-primary)] text-xs font-semibold hover:opacity-90 disabled:opacity-40 transition-opacity cursor-pointer"
+                    >
+                      <Check className="w-3.5 h-3.5" />
+                      <span>{editingAppId ? 'Update App' : 'Save App'}</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Apps List */}
+              <div className="space-y-1.5 max-h-64 overflow-y-auto pr-1 custom-scrollbar">
+                {googleApps.map((app, index) => (
+                  <div
+                    key={app.id}
+                    className="flex items-center justify-between p-2 rounded-xl bg-[var(--md-sys-color-surface-container)] hover:bg-[var(--md-sys-color-hover-tint)] transition-colors group"
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <span className="w-7 h-7 rounded-lg bg-[var(--md-sys-color-surface)] border border-[var(--md-sys-color-outline)]/30 flex items-center justify-center text-xs font-bold text-[var(--md-sys-color-primary)] shadow-xs shrink-0">
+                        {app.name.charAt(0).toUpperCase()}
+                      </span>
+                      <div className="min-w-0">
+                        <div className="text-xs font-semibold text-[var(--md-sys-color-on-surface)] truncate">
+                          {app.name}
+                        </div>
+                        <div className="text-[10px] text-[var(--md-sys-color-on-surface-variant)] truncate max-w-44">
+                          {app.url}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-0.5 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => handleMoveApp(index, 'up')}
+                        disabled={index === 0}
+                        title="Move Up"
+                        className="p-1 rounded-md text-[var(--md-sys-color-on-surface-variant)] hover:bg-[var(--md-sys-color-surface)] disabled:opacity-20 cursor-pointer"
+                      >
+                        <ArrowUp className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleMoveApp(index, 'down')}
+                        disabled={index === googleApps.length - 1}
+                        title="Move Down"
+                        className="p-1 rounded-md text-[var(--md-sys-color-on-surface-variant)] hover:bg-[var(--md-sys-color-surface)] disabled:opacity-20 cursor-pointer"
+                      >
+                        <ArrowDown className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleStartEditApp(app)}
+                        title="Edit App"
+                        className="p-1 rounded-md text-[var(--md-sys-color-on-surface-variant)] hover:text-[var(--md-sys-color-primary)] hover:bg-[var(--md-sys-color-surface)] cursor-pointer"
+                      >
+                        <Edit2 className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteApp(app.id)}
+                        title="Delete App"
+                        className="p-1 rounded-md text-[var(--md-sys-color-on-surface-variant)] hover:text-red-500 hover:bg-[var(--md-sys-color-surface)] cursor-pointer"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </section>
 

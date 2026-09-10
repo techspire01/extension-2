@@ -7,7 +7,6 @@ import {
   Settings,
   Folder,
   FolderOpen,
-  Plus,
   ChevronDown,
 } from 'lucide-react';
 import { AppSettings, BookmarkItem } from '../types';
@@ -19,15 +18,16 @@ interface TopBarProps {
   folderCounts: Record<string, number>;
   bookmarks: BookmarkItem[];
   onOpenTodoList: () => void;
-  onOpenBookmarks: () => void;
+  onOpenBookmarks?: () => void;
   onSelectBookmarkFolder: (folder: string) => void;
-  onOpenAddFolder: () => void;
+  onOpenAddFolder?: () => void;
   onAddBookmark?: (bookmark: Omit<BookmarkItem, 'id' | 'createdAt'>) => void;
   onDeleteBookmark?: (id: string) => void;
   onDeleteFolder?: (folderName: string) => void;
   onOpenGoogleApps: () => void;
   onOpenSettings: () => void;
   onOpenExtensionModal?: () => void;
+  isAnyDrawerOpen?: boolean;
 }
 
 export const TopBar: React.FC<TopBarProps> = ({
@@ -37,70 +37,97 @@ export const TopBar: React.FC<TopBarProps> = ({
   folderCounts,
   bookmarks,
   onOpenTodoList,
-  onOpenBookmarks,
+  onOpenBookmarks: _onOpenBookmarks,
   onSelectBookmarkFolder,
-  onOpenAddFolder,
+  onOpenAddFolder: _onOpenAddFolder,
   onAddBookmark,
   onDeleteBookmark,
   onDeleteFolder,
   onOpenGoogleApps,
   onOpenSettings,
+  isAnyDrawerOpen = false,
 }) => {
-  const [openFolders, setOpenFolders] = useState<Record<string, boolean>>(() => {
-    try {
-      const saved = localStorage.getItem('zen_topbar_open_folders');
-      return saved ? JSON.parse(saved) : {};
-    } catch {
-      return {};
-    }
-  });
+  const [activeFolder, setActiveFolder] = useState<string | null>(null);
   const buttonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const [dropdownCoords, setDropdownCoords] = useState<
     Record<string, { top: number; left?: number; right?: number }>
   >({});
 
-  // Persist open/close state so it remains open until the user closes it
+  // Clear stale persisted open folders from localStorage
   useEffect(() => {
     try {
-      localStorage.setItem('zen_topbar_open_folders', JSON.stringify(openFolders));
-    } catch {
-      // Ignore storage errors
+      localStorage.removeItem('zen_topbar_open_folders');
+    } catch {}
+  }, []);
+
+  // Close folder dropdown immediately if any drawer/modal is opened
+  useEffect(() => {
+    if (isAnyDrawerOpen) {
+      setActiveFolder(null);
     }
-  }, [openFolders]);
+  }, [isAnyDrawerOpen]);
+
+  // Handle outside click & escape key to close open folder dropdown
+  useEffect(() => {
+    if (!activeFolder) return;
+
+    const handleClickOutside = (e: MouseEvent | TouchEvent) => {
+      const target = e.target as HTMLElement;
+      const btn = buttonRefs.current[activeFolder];
+      if (btn && btn.contains(target)) return;
+
+      const dropdown = document.getElementById('dropdown-folder-design');
+      if (dropdown && dropdown.contains(target)) return;
+
+      setActiveFolder(null);
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setActiveFolder(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [activeFolder]);
 
   const toggleFolderHierarchy = (folder: string) => {
-    setOpenFolders((prev) => ({
-      ...prev,
-      [folder]: !prev[folder],
-    }));
+    setActiveFolder((prev) => (prev === folder ? null : folder));
   };
 
   const updateCoords = useCallback(() => {
-    const newCoords: Record<string, { top: number; left?: number; right?: number }> = {};
-    for (const folder of bookmarkFolders) {
-      if (openFolders[folder]) {
-        const btn = buttonRefs.current[folder];
-        if (btn) {
-          const rect = btn.getBoundingClientRect();
-          const dropdownWidth = 220;
-          const isNearRight = rect.left + dropdownWidth > window.innerWidth - 16;
+    if (!activeFolder) {
+      setDropdownCoords({});
+      return;
+    }
 
-          if (isNearRight) {
-            newCoords[folder] = {
+    const btn = buttonRefs.current[activeFolder];
+    if (btn) {
+      const rect = btn.getBoundingClientRect();
+      const dropdownWidth = 130;
+      const isNearRight = rect.left + dropdownWidth > window.innerWidth - 16;
+
+      setDropdownCoords({
+        [activeFolder]: isNearRight
+          ? {
               top: rect.bottom + 6,
               right: Math.max(12, window.innerWidth - rect.right),
-            };
-          } else {
-            newCoords[folder] = {
+            }
+          : {
               top: rect.bottom + 6,
               left: Math.max(12, rect.left),
-            };
-          }
-        }
-      }
+            },
+      });
     }
-    setDropdownCoords(newCoords);
-  }, [bookmarkFolders, openFolders]);
+  }, [activeFolder]);
 
   useLayoutEffect(() => {
     updateCoords();
@@ -123,6 +150,21 @@ export const TopBar: React.FC<TopBarProps> = ({
     }
   };
 
+  const handleOpenTodoList = () => {
+    setActiveFolder(null);
+    onOpenTodoList();
+  };
+
+  const handleOpenGoogleApps = () => {
+    setActiveFolder(null);
+    onOpenGoogleApps();
+  };
+
+  const handleOpenSettings = () => {
+    setActiveFolder(null);
+    onOpenSettings();
+  };
+
   return (
     <header
       id="top-bar"
@@ -133,7 +175,7 @@ export const TopBar: React.FC<TopBarProps> = ({
         {settings.showTodoList && (
           <button
             id="todoListCont"
-            onClick={onOpenTodoList}
+            onClick={handleOpenTodoList}
             title="To-Do List"
             className="relative flex items-center justify-center w-11 h-11 rounded-2xl bg-[var(--md-sys-color-primary-container)] text-[var(--md-sys-color-on-primary-container)] hover:shadow-md transition-all duration-200 cursor-pointer active:scale-95 group"
           >
@@ -150,22 +192,10 @@ export const TopBar: React.FC<TopBarProps> = ({
           </button>
         )}
 
-        {settings.showBookmarks && (
-          <button
-            id="bookmarkButton"
-            onClick={onOpenBookmarks}
-            title="Bookmarks"
-            className="flex items-center justify-center w-11 h-11 rounded-2xl bg-[var(--md-sys-color-primary-container)] text-[var(--md-sys-color-on-primary-container)] hover:shadow-md transition-all duration-200 cursor-pointer active:scale-95 group"
-          >
-            <Bookmark className="w-5 h-5 transition-transform group-hover:scale-110" />
-            <span className="sr-only">Open Bookmarks</span>
-          </button>
-        )}
-
         {settings.showGoogleApps && (
           <button
             id="googleAppsCont"
-            onClick={onOpenGoogleApps}
+            onClick={handleOpenGoogleApps}
             title="Google Apps"
             className="flex items-center justify-center w-11 h-11 rounded-2xl bg-[var(--md-sys-color-primary-container)] text-[var(--md-sys-color-on-primary-container)] hover:shadow-md transition-all duration-200 cursor-pointer active:scale-95 group"
           >
@@ -185,7 +215,7 @@ export const TopBar: React.FC<TopBarProps> = ({
           >
             {bookmarkFolders.map((folder) => {
               const count = folderCounts[folder] || 0;
-              const isFolderOpen = !!openFolders[folder];
+              const isFolderOpen = activeFolder === folder;
               const folderBookmarks = bookmarks.filter(
                 (b) => (b.category || 'General').toLowerCase() === folder.toLowerCase()
               );
@@ -230,88 +260,70 @@ export const TopBar: React.FC<TopBarProps> = ({
                     />
                   </button>
 
-                  {/* Bookmarks dropdown rendered directly below this folder */}
-                  {isFolderOpen &&
+                  {/* Bookmarks dropdown rendered directly below this folder without background */}
+                  {!isAnyDrawerOpen &&
+                    isFolderOpen &&
                     coords &&
                     createPortal(
                       <div
-                        id={`dropdown-folder-${folder.toLowerCase().replace(/[^a-z0-9]/g, '-')}`}
+                        id="dropdown-folder-design"
                         style={{
                           position: 'fixed',
                           top: `${coords.top}px`,
                           ...(coords.right !== undefined
                             ? { right: `${coords.right}px` }
                             : { left: `${coords.left}px` }),
-                          zIndex: 9999,
+                          zIndex: 40,
                           maxHeight: 'calc(100vh - 120px)',
-                          ...(folder.toLowerCase() === 'design'
-                            ? { height: '50px', width: '0px', minWidth: '0px' }
-                            : {}),
+                          width: '130px',
                         }}
-                        className={`max-w-xs bg-[var(--md-sys-color-surface-container)] rounded-xl shadow-xl border border-[var(--md-sys-color-outline)]/40 p-1 animate-in fade-in zoom-in-95 duration-150 backdrop-blur-md flex flex-col ${
-                          folder.toLowerCase() === 'design'
-                            ? 'w-0 h-[50px] min-w-0 overflow-hidden'
-                            : 'min-w-[190px]'
-                        }`}
+                        className="w-[130px] bg-transparent rounded-none shadow-none border-none p-1 animate-in fade-in zoom-in-95 duration-150 flex flex-col gap-1.5 overflow-y-auto custom-scrollbar"
                       >
-                        {/* Only the bookmarks displayed */}
-                        <div className="space-y-0.5 overflow-y-auto custom-scrollbar flex-1 max-h-64">
-                          {folderBookmarks.length === 0 ? (
-                            <div className="py-2.5 px-3 text-center text-xs text-[var(--md-sys-color-on-surface-variant)]">
-                              <Bookmark className="w-4 h-4 mx-auto mb-1 opacity-35 text-[var(--md-sys-color-primary)]" />
-                              <p>No bookmarks</p>
-                            </div>
-                          ) : (
-                            folderBookmarks.map((bm) => {
-                              const domain = getDomain(bm.url);
-                              return (
-                                <a
-                                  key={bm.id}
-                                  href={bm.url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="group flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg hover:bg-[var(--md-sys-color-hover-tint)] transition-colors cursor-pointer min-w-0"
-                                >
-                                  <img
-                                    src={`https://www.google.com/s2/favicons?domain=${domain}&sz=32`}
-                                    alt=""
-                                    className="w-4 h-4 rounded-xs shrink-0 object-contain"
-                                    referrerPolicy="no-referrer"
-                                    onError={(e) => {
-                                      (e.currentTarget as HTMLElement).style.display = 'none';
-                                    }}
-                                  />
-                                  <span className="text-xs font-medium text-[var(--md-sys-color-on-surface)] truncate group-hover:text-[var(--md-sys-color-primary)]">
-                                    {bm.title}
-                                  </span>
-                                </a>
-                              );
-                            })
-                          )}
-                        </div>
+                        {folderBookmarks.length === 0 ? (
+                          <span className="py-1 px-1.5 text-xs text-[var(--md-sys-color-on-surface-variant)]">
+                            No bookmarks
+                          </span>
+                        ) : (
+                          folderBookmarks.map((bm) => {
+                            const domain = getDomain(bm.url);
+                            return (
+                              <a
+                                key={bm.id}
+                                href={bm.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={() => setActiveFolder(null)}
+                                className="group flex items-center gap-2 py-1 px-1.5 rounded-lg bg-transparent hover:bg-transparent text-[var(--md-sys-color-on-surface)] transition-colors cursor-pointer min-w-0"
+                              >
+                                <img
+                                  src={`https://www.google.com/s2/favicons?domain=${domain}&sz=32`}
+                                  alt=""
+                                  className="w-4 h-4 rounded-xs shrink-0 object-contain"
+                                  referrerPolicy="no-referrer"
+                                  onError={(e) => {
+                                    (e.currentTarget as HTMLElement).style.display = 'none';
+                                  }}
+                                />
+                                <span className="text-xs font-medium truncate drop-shadow-xs group-hover:text-[var(--md-sys-color-primary)] transition-colors">
+                                  {bm.title}
+                                </span>
+                              </a>
+                            );
+                          })
+                        )}
                       </div>,
                       document.body
                     )}
                 </div>
               );
             })}
-
-            <button
-              id="topbar-add-folder-btn"
-              onClick={onOpenAddFolder}
-              title="Add Bookmark Folder"
-              className="flex items-center justify-center w-8 h-8 rounded-full border border-dashed border-[var(--md-sys-color-outline)] hover:border-[var(--md-sys-color-primary)] hover:bg-[var(--md-sys-color-hover-tint)] text-[var(--md-sys-color-on-surface-variant)] hover:text-[var(--md-sys-color-primary)] transition-all shrink-0 cursor-pointer active:scale-95"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span className="sr-only">Add Bookmark Folder</span>
-            </button>
           </div>
         )}
 
         <div className="shrink-0 pl-1">
           <button
             id="menuButton"
-            onClick={onOpenSettings}
+            onClick={handleOpenSettings}
             title="Customize & Settings"
             className="flex items-center justify-center w-11 h-11 rounded-2xl bg-[var(--md-sys-color-primary)] text-[var(--md-sys-color-on-primary)] hover:shadow-lg transition-all duration-200 cursor-pointer active:scale-95 group"
           >
