@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   X,
   Plus,
@@ -48,7 +48,22 @@ export const BookmarksDrawer: React.FC<BookmarksDrawerProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOrder, setSortOrder] = useState<'alpha' | 'time'>('alpha');
   const [viewMode, setViewMode] = useState<'hierarchy' | 'list' | 'grid'>('hierarchy');
-  const [collapsedFolders, setCollapsedFolders] = useState<Record<string, boolean>>({});
+  const [collapsedFolders, setCollapsedFolders] = useState<Record<string, boolean>>(() => {
+    try {
+      const saved = localStorage.getItem('bookmarks_drawer_collapsed_folders');
+      return saved ? JSON.parse(saved) : {};
+    } catch {
+      return {};
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('bookmarks_drawer_collapsed_folders', JSON.stringify(collapsedFolders));
+    } catch (e) {
+      console.error(e);
+    }
+  }, [collapsedFolders]);
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [editingBookmark, setEditingBookmark] = useState<BookmarkItem | null>(null);
 
