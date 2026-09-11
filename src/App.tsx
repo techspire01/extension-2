@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from "react";
 import {
   AppSettings,
   ShortcutItem,
@@ -11,7 +11,7 @@ import {
   BookmarkItem,
   AIToolItem,
   SearchEngineKey,
-} from './types';
+} from "./types";
 import {
   DEFAULT_SETTINGS,
   DEFAULT_SHORTCUTS,
@@ -19,28 +19,29 @@ import {
   DEFAULT_BOOKMARKS,
   AI_TOOLS_LIST,
   GOOGLE_APPS,
-} from './data/defaultData';
-import { applyThemeVariables } from './theme/materialTheme';
+} from "./data/defaultData";
+import { applyThemeVariables } from "./theme/materialTheme";
 
-import { TopBar } from './components/TopBar';
-import { ClockWidget } from './components/ClockWidget';
-import { WeatherWidget } from './components/WeatherWidget';
-import { SearchBar } from './components/SearchBar';
-import { ShortcutsGrid } from './components/ShortcutsGrid';
-import { AIToolsDock } from './components/AIToolsDock';
-import { ScrumWorkspace } from './components/Scrum/ScrumWorkspace';
-import { BookmarksDrawer } from './components/BookmarksDrawer';
-import { GoogleAppsMenu } from './components/GoogleAppsMenu';
-import { SettingsDrawer } from './components/SettingsDrawer';
-import { ExtensionExportModal } from './components/ExtensionExportModal';
-import { GoogleAppItem } from './types';
-import { parseChromeBookmarksTree } from './utils/browserBookmarks';
+import { TopBar } from "./components/TopBar";
+import { ClockWidget } from "./components/ClockWidget";
+import { WeatherWidget } from "./components/WeatherWidget";
+import { SearchBar } from "./components/SearchBar";
+import { ShortcutsGrid } from "./components/ShortcutsGrid";
+import { AIToolsDock } from "./components/AIToolsDock";
+import { ScrumWorkspace } from "./components/Scrum/ScrumWorkspace";
+import { NotepadWidget } from "./components/NotepadWidget";
+import { BookmarksDrawer } from "./components/BookmarksDrawer";
+import { GoogleAppsMenu } from "./components/GoogleAppsMenu";
+import { SettingsDrawer } from "./components/SettingsDrawer";
+import { ExtensionExportModal } from "./components/ExtensionExportModal";
+import { GoogleAppItem } from "./types";
+import { parseChromeBookmarksTree } from "./utils/browserBookmarks";
 
 export default function App() {
   // 1. Settings State
   const [settings, setSettings] = useState<AppSettings>(() => {
     try {
-      const saved = localStorage.getItem('mynt_settings');
+      const saved = localStorage.getItem("mynt_settings");
       if (saved) {
         return { ...DEFAULT_SETTINGS, ...JSON.parse(saved) };
       }
@@ -53,7 +54,7 @@ export default function App() {
   // 2. Shortcuts State
   const [shortcuts, setShortcuts] = useState<ShortcutItem[]>(() => {
     try {
-      const saved = localStorage.getItem('mynt_shortcuts');
+      const saved = localStorage.getItem("mynt_shortcuts");
       if (saved) {
         return JSON.parse(saved);
       }
@@ -66,7 +67,7 @@ export default function App() {
   // 3. ToDos State
   const [todos, setTodos] = useState<TodoItem[]>(() => {
     try {
-      const saved = localStorage.getItem('mynt_todos');
+      const saved = localStorage.getItem("mynt_todos");
       if (saved) {
         return JSON.parse(saved);
       }
@@ -79,7 +80,7 @@ export default function App() {
   // 4. Bookmarks State
   const [bookmarks, setBookmarks] = useState<BookmarkItem[]>(() => {
     try {
-      const saved = localStorage.getItem('mynt_bookmarks');
+      const saved = localStorage.getItem("mynt_bookmarks");
       if (saved) {
         return JSON.parse(saved);
       }
@@ -92,7 +93,7 @@ export default function App() {
   // 4b. Bookmark Folders State
   const [bookmarkFolders, setBookmarkFolders] = useState<string[]>(() => {
     try {
-      const saved = localStorage.getItem('mynt_bookmark_folders');
+      const saved = localStorage.getItem("mynt_bookmark_folders");
       if (saved) {
         return JSON.parse(saved);
       }
@@ -100,15 +101,24 @@ export default function App() {
       // fallback
     }
     const initial = Array.from(
-      new Set(DEFAULT_BOOKMARKS.map((b) => b.category || 'General').filter(Boolean))
+      new Set(
+        DEFAULT_BOOKMARKS.map((b) => b.category || "General").filter(Boolean),
+      ),
     );
-    return initial.length > 0 ? initial : ['General', 'Development', 'Design', 'Reading'];
+    return initial.length > 0
+      ? initial
+      : ["General", "Development", "Design", "Reading"];
   });
 
-  const [selectedFolderFilter, setSelectedFolderFilter] = useState<string | null>(null);
+  const [selectedFolderFilter, setSelectedFolderFilter] = useState<
+    string | null
+  >(null);
 
   useEffect(() => {
-    localStorage.setItem('mynt_bookmark_folders', JSON.stringify(bookmarkFolders));
+    localStorage.setItem(
+      "mynt_bookmark_folders",
+      JSON.stringify(bookmarkFolders),
+    );
   }, [bookmarkFolders]);
 
   // Derived unique bookmark folders combining stored folders and any existing bookmark category
@@ -128,7 +138,7 @@ export default function App() {
     const counts: Record<string, number> = {};
     allBookmarkFolders.forEach((folder) => {
       counts[folder] = bookmarks.filter(
-        (b) => (b.category || 'General').toLowerCase() === folder.toLowerCase()
+        (b) => (b.category || "General").toLowerCase() === folder.toLowerCase(),
       ).length;
     });
     return counts;
@@ -137,7 +147,7 @@ export default function App() {
   // Automatically load and sync browser native bookmarks if running as an extension
   useEffect(() => {
     if (
-      typeof window !== 'undefined' &&
+      typeof window !== "undefined" &&
       (window as any).chrome?.bookmarks?.getTree
     ) {
       const chromeApi = (window as any).chrome;
@@ -156,7 +166,7 @@ export default function App() {
             }
           });
         } catch (e) {
-          console.warn('Native bookmarks sync:', e);
+          console.warn("Native bookmarks sync:", e);
         }
       };
 
@@ -181,7 +191,7 @@ export default function App() {
   // 5. AI Tools State
   const [aiTools, setAiTools] = useState<AIToolItem[]>(() => {
     try {
-      const saved = localStorage.getItem('mynt_ai_tools');
+      const saved = localStorage.getItem("mynt_ai_tools");
       if (saved) {
         return JSON.parse(saved);
       }
@@ -194,7 +204,7 @@ export default function App() {
   // 6. Google Apps Launcher State
   const [googleApps, setGoogleApps] = useState<GoogleAppItem[]>(() => {
     try {
-      const saved = localStorage.getItem('mynt_google_apps');
+      const saved = localStorage.getItem("mynt_google_apps");
       if (saved) {
         return JSON.parse(saved);
       }
@@ -205,7 +215,7 @@ export default function App() {
   });
 
   useEffect(() => {
-    localStorage.setItem('mynt_google_apps', JSON.stringify(googleApps));
+    localStorage.setItem("mynt_google_apps", JSON.stringify(googleApps));
   }, [googleApps]);
 
   // Active Drawers / Modals
@@ -215,28 +225,32 @@ export default function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isExtensionModalOpen, setIsExtensionModalOpen] = useState(false);
   const [openScrumTaskCount, setOpenScrumTaskCount] = useState(
-    todos.filter((todo) => !todo.completed).length
+    todos.filter((todo) => !todo.completed).length,
   );
 
   useEffect(() => {
     const handleSettingsShortcut = (event: KeyboardEvent) => {
-      if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toLowerCase() === 's') {
+      if (
+        (event.ctrlKey || event.metaKey) &&
+        event.shiftKey &&
+        event.key.toLowerCase() === "s"
+      ) {
         event.preventDefault();
         setIsSettingsOpen(true);
       }
     };
-    window.addEventListener('keydown', handleSettingsShortcut);
-    return () => window.removeEventListener('keydown', handleSettingsShortcut);
+    window.addEventListener("keydown", handleSettingsShortcut);
+    return () => window.removeEventListener("keydown", handleSettingsShortcut);
   }, []);
 
   // Sync settings with localStorage and apply dynamic Material You variables
   useEffect(() => {
-    localStorage.setItem('mynt_settings', JSON.stringify(settings));
+    localStorage.setItem("mynt_settings", JSON.stringify(settings));
     applyThemeVariables(
       settings.themeColor,
       settings.customHexColor,
       settings.themeMode,
-      settings.cardOpacity
+      settings.cardOpacity,
     );
   }, [
     settings.themeColor,
@@ -247,19 +261,19 @@ export default function App() {
 
   // Sync state items to localStorage
   useEffect(() => {
-    localStorage.setItem('mynt_shortcuts', JSON.stringify(shortcuts));
+    localStorage.setItem("mynt_shortcuts", JSON.stringify(shortcuts));
   }, [shortcuts]);
 
   useEffect(() => {
-    localStorage.setItem('mynt_todos', JSON.stringify(todos));
+    localStorage.setItem("mynt_todos", JSON.stringify(todos));
   }, [todos]);
 
   useEffect(() => {
-    localStorage.setItem('mynt_bookmarks', JSON.stringify(bookmarks));
+    localStorage.setItem("mynt_bookmarks", JSON.stringify(bookmarks));
   }, [bookmarks]);
 
   useEffect(() => {
-    localStorage.setItem('mynt_ai_tools', JSON.stringify(aiTools));
+    localStorage.setItem("mynt_ai_tools", JSON.stringify(aiTools));
   }, [aiTools]);
 
   // Handlers
@@ -268,13 +282,17 @@ export default function App() {
   };
 
   const handleResetSettings = () => {
-    if (confirm('Reset all settings to defaults? Your shortcuts and tasks will remain.')) {
+    if (
+      confirm(
+        "Reset all settings to defaults? Your shortcuts and tasks will remain.",
+      )
+    ) {
       setSettings(DEFAULT_SETTINGS);
     }
   };
 
   // Shortcuts actions
-  const handleAddShortcut = (item: Omit<ShortcutItem, 'id'>) => {
+  const handleAddShortcut = (item: Omit<ShortcutItem, "id">) => {
     const newShortcut: ShortcutItem = {
       ...item,
       id: `sc-${Date.now()}`,
@@ -284,7 +302,7 @@ export default function App() {
 
   const handleUpdateShortcut = (id: string, updated: Partial<ShortcutItem>) => {
     setShortcuts((prev) =>
-      prev.map((s) => (s.id === id ? { ...s, ...updated } : s))
+      prev.map((s) => (s.id === id ? { ...s, ...updated } : s)),
     );
   };
 
@@ -305,7 +323,7 @@ export default function App() {
 
   const handleToggleTodo = (id: string) => {
     setTodos((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t))
+      prev.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t)),
     );
   };
 
@@ -318,7 +336,7 @@ export default function App() {
   };
 
   // Bookmark actions
-  const handleAddBookmark = (item: Omit<BookmarkItem, 'id' | 'createdAt'>) => {
+  const handleAddBookmark = (item: Omit<BookmarkItem, "id" | "createdAt">) => {
     const newBm: BookmarkItem = {
       ...item,
       id: `bm-${Date.now()}`,
@@ -329,7 +347,7 @@ export default function App() {
 
   const handleUpdateBookmark = (id: string, updated: Partial<BookmarkItem>) => {
     setBookmarks((prev) =>
-      prev.map((b) => (b.id === id ? { ...b, ...updated } : b))
+      prev.map((b) => (b.id === id ? { ...b, ...updated } : b)),
     );
   };
 
@@ -342,7 +360,9 @@ export default function App() {
     const trimmed = folderName.trim();
     if (!trimmed) return;
     setBookmarkFolders((prev) => {
-      const exists = prev.some((f) => f.toLowerCase() === trimmed.toLowerCase());
+      const exists = prev.some(
+        (f) => f.toLowerCase() === trimmed.toLowerCase(),
+      );
       if (exists) return prev;
       return [...prev, trimmed];
     });
@@ -354,8 +374,10 @@ export default function App() {
     // Clear/default category for bookmarks assigned to deleted folder so it doesn't immediately resurrect
     setBookmarks((prev) =>
       prev.map((b) =>
-        (b.category || '').toLowerCase() === lower ? { ...b, category: 'General' } : b
-      )
+        (b.category || "").toLowerCase() === lower
+          ? { ...b, category: "General" }
+          : b,
+      ),
     );
     if (selectedFolderFilter?.toLowerCase() === lower) {
       setSelectedFolderFilter(null);
@@ -375,7 +397,7 @@ export default function App() {
   // AI Tool toggle
   const handleToggleAITool = (id: string) => {
     setAiTools((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, enabled: !t.enabled } : t))
+      prev.map((t) => (t.id === id ? { ...t, enabled: !t.enabled } : t)),
     );
   };
 
@@ -384,7 +406,7 @@ export default function App() {
   return (
     <div className="relative min-h-screen w-full flex flex-col justify-between overflow-x-hidden transition-colors duration-300">
       {/* Background Wallpaper Layer (if enabled) */}
-      {settings.wallpaperType !== 'none' && settings.customWallpaperUrl && (
+      {settings.wallpaperType !== "none" && settings.customWallpaperUrl && (
         <div
           className="fixed inset-0 pointer-events-none z-0 bg-cover bg-center transition-all duration-500"
           style={{
@@ -404,123 +426,118 @@ export default function App() {
         className="relative min-h-screen w-full flex flex-col justify-between transition-opacity duration-300"
         style={{
           opacity: settings.cardOpacity,
-          pointerEvents: settings.cardOpacity === 0 ? 'none' : 'auto',
+          pointerEvents: settings.cardOpacity === 0 ? "none" : "auto",
         }}
         aria-hidden={settings.cardOpacity === 0}
       >
         {/* Top Bar Header */}
         <TopBar
-        settings={settings}
-        unreadTodosCount={openScrumTaskCount}
-        bookmarkFolders={allBookmarkFolders}
-        folderCounts={folderCounts}
-        bookmarks={bookmarks}
-        onOpenTodoList={() => setIsTodoListOpen(true)}
-        onOpenBookmarks={() => {
-          setSelectedFolderFilter(null);
-          setIsBookmarksOpen(true);
-        }}
-        onSelectBookmarkFolder={handleSelectBookmarkFolder}
-        onOpenAddFolder={handleOpenAddFolder}
-        onAddBookmark={handleAddBookmark}
-        onDeleteBookmark={handleDeleteBookmark}
-        onDeleteFolder={handleDeleteFolder}
-        onOpenGoogleApps={() => setIsGoogleAppsOpen(true)}
-        onOpenSettings={() => setIsSettingsOpen(true)}
-        onOpenExtensionModal={() => setIsExtensionModalOpen(true)}
-        isAnyDrawerOpen={
-          isTodoListOpen ||
-          isBookmarksOpen ||
-          isGoogleAppsOpen ||
-          isSettingsOpen ||
-          isExtensionModalOpen
-        }
+          settings={settings}
+          unreadTodosCount={openScrumTaskCount}
+          bookmarkFolders={allBookmarkFolders}
+          folderCounts={folderCounts}
+          bookmarks={bookmarks}
+          onOpenTodoList={() => setIsTodoListOpen(true)}
+          onOpenBookmarks={() => {
+            setSelectedFolderFilter(null);
+            setIsBookmarksOpen(true);
+          }}
+          onSelectBookmarkFolder={handleSelectBookmarkFolder}
+          onOpenAddFolder={handleOpenAddFolder}
+          onAddBookmark={handleAddBookmark}
+          onDeleteBookmark={handleDeleteBookmark}
+          onDeleteFolder={handleDeleteFolder}
+          onOpenGoogleApps={() => setIsGoogleAppsOpen(true)}
+          onOpenSettings={() => setIsSettingsOpen(true)}
+          onOpenExtensionModal={() => setIsExtensionModalOpen(true)}
+          isAnyDrawerOpen={
+            isTodoListOpen ||
+            isBookmarksOpen ||
+            isGoogleAppsOpen ||
+            isSettingsOpen ||
+            isExtensionModalOpen
+          }
         />
 
-      {/* Main Center Content */}
+        {/* Main Center Content */}
         <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 py-4 max-w-5xl mx-auto w-full">
-        {/* Main Hero Row: Clock on the left side of Search Bar, with Weather on the right */}
-        <div className="w-full flex flex-col md:flex-row items-center justify-center gap-6 lg:gap-8 mb-5">
-          {/* Left: Clock Widget */}
-          <div className="shrink-0 flex justify-center">
-            <ClockWidget
-              settings={settings}
-              onUpdateCustomText={(text) =>
-                handleUpdateSettings({ customText: text })
-              }
-              onUpdateUserName={(name) =>
-                handleUpdateSettings({ userName: name })
-              }
-            />
-          </div>
-
-          {/* Center: Search Bar */}
-          <div className="flex-1 w-full max-w-2xl flex flex-col items-center">
-            <SearchBar
-              settings={settings}
-              onUpdateEngine={(engine: SearchEngineKey) =>
-                handleUpdateSettings({ defaultSearchEngine: engine })
-              }
-            />
-          </div>
-
-          {/* Right: Live Weather (if enabled) */}
-          {settings.showWeather && (
+          {/* Main Hero Row: Clock on the left side of Search Bar, with Weather on the right */}
+          <div className="w-full flex flex-col md:flex-row items-center justify-center gap-6 lg:gap-8 mb-5">
+            {/* Left: Clock Widget */}
             <div className="shrink-0 flex justify-center">
-              <WeatherWidget
+              <ClockWidget
                 settings={settings}
-                onOpenSettingsWeather={() => setIsSettingsOpen(true)}
+                onUpdateCustomText={(text) =>
+                  handleUpdateSettings({ customText: text })
+                }
+                onUpdateUserName={(name) =>
+                  handleUpdateSettings({ userName: name })
+                }
               />
             </div>
-          )}
-        </div>
 
-        {/* Customizable Quick Access Dashboard (Shortcuts Grid) */}
-        <ShortcutsGrid
-          settings={settings}
-          shortcuts={shortcuts}
-          onAddShortcut={handleAddShortcut}
-          onUpdateShortcut={handleUpdateShortcut}
-          onDeleteShortcut={handleDeleteShortcut}
-          onReorderShortcuts={(reordered) => setShortcuts(reordered)}
-          onUpdateSettings={handleUpdateSettings}
-        />
+            {/* Center: Search Bar */}
+            <div className="flex-1 w-full max-w-2xl flex flex-col items-center">
+              <SearchBar
+                settings={settings}
+                onUpdateEngine={(engine: SearchEngineKey) =>
+                  handleUpdateSettings({ defaultSearchEngine: engine })
+                }
+              />
+            </div>
+
+            {/* Right: Live Weather (if enabled) */}
+            {settings.showWeather && (
+              <div className="shrink-0 flex justify-center">
+                <WeatherWidget
+                  settings={settings}
+                  onOpenSettingsWeather={() => setIsSettingsOpen(true)}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Customizable Quick Access Dashboard (Shortcuts Grid) */}
+          <ShortcutsGrid
+            settings={settings}
+            shortcuts={shortcuts}
+            onAddShortcut={handleAddShortcut}
+            onUpdateShortcut={handleUpdateShortcut}
+            onDeleteShortcut={handleDeleteShortcut}
+            onReorderShortcuts={(reordered) => setShortcuts(reordered)}
+            onUpdateSettings={handleUpdateSettings}
+          />
         </main>
 
-      {/* Floating AI Tools Dock at bottom */}
+        {/* Floating AI Tools Dock at bottom */}
         <AIToolsDock
           settings={settings}
           tools={aiTools}
           onOpenSettings={() => setIsSettingsOpen(true)}
         />
 
-      {/* Modals & Slide-over Drawers */}
-        <ScrumWorkspace
-        isOpen={isTodoListOpen}
-        onClose={() => setIsTodoListOpen(false)}
-        legacyTodos={todos}
-        onOpenTaskCountChange={setOpenScrumTaskCount}
-        />
+        <NotepadWidget settings={settings} />
 
+        {/* Modals & Slide-over Drawers */}
         <BookmarksDrawer
-        isOpen={isBookmarksOpen}
-        onClose={() => setIsBookmarksOpen(false)}
-        bookmarks={bookmarks}
-        folders={allBookmarkFolders}
-        selectedFolderFilter={selectedFolderFilter}
-        onSelectFolderFilter={setSelectedFolderFilter}
-        onAddFolder={handleAddFolder}
-        onDeleteFolder={handleDeleteFolder}
-        onAddBookmark={handleAddBookmark}
-        onUpdateBookmark={handleUpdateBookmark}
-        onDeleteBookmark={handleDeleteBookmark}
+          isOpen={isBookmarksOpen}
+          onClose={() => setIsBookmarksOpen(false)}
+          bookmarks={bookmarks}
+          folders={allBookmarkFolders}
+          selectedFolderFilter={selectedFolderFilter}
+          onSelectFolderFilter={setSelectedFolderFilter}
+          onAddFolder={handleAddFolder}
+          onDeleteFolder={handleDeleteFolder}
+          onAddBookmark={handleAddBookmark}
+          onUpdateBookmark={handleUpdateBookmark}
+          onDeleteBookmark={handleDeleteBookmark}
         />
 
         <GoogleAppsMenu
-        isOpen={isGoogleAppsOpen}
-        onClose={() => setIsGoogleAppsOpen(false)}
-        apps={googleApps}
-        onOpenSettings={() => setIsSettingsOpen(true)}
+          isOpen={isGoogleAppsOpen}
+          onClose={() => setIsGoogleAppsOpen(false)}
+          apps={googleApps}
+          onOpenSettings={() => setIsSettingsOpen(true)}
         />
 
         <ExtensionExportModal
@@ -528,6 +545,13 @@ export default function App() {
           onClose={() => setIsExtensionModalOpen(false)}
         />
       </div>
+
+      <ScrumWorkspace
+        isOpen={isTodoListOpen}
+        onClose={() => setIsTodoListOpen(false)}
+        legacyTodos={todos}
+        onOpenTaskCountChange={setOpenScrumTaskCount}
+      />
 
       <SettingsDrawer
         isOpen={isSettingsOpen}
@@ -540,7 +564,6 @@ export default function App() {
         googleApps={googleApps}
         onUpdateGoogleApps={setGoogleApps}
       />
-
     </div>
   );
 }

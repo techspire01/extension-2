@@ -18,12 +18,14 @@ import {
   ScrumPriority,
   ScrumSprint,
   ScrumStatus,
+  ScrumStatusDefinition,
   ScrumTask,
 } from "../../types";
 
 interface TaskModalProps {
   task: ScrumTask | null;
   sprints: ScrumSprint[];
+  statuses: ScrumStatusDefinition[];
   defaultPriority: ScrumPriority;
   defaultSprintId: string | null;
   initialStatus?: ScrumStatus;
@@ -64,6 +66,7 @@ const emptyTask = (
 export const TaskModal: React.FC<TaskModalProps> = ({
   task,
   sprints,
+  statuses,
   defaultPriority,
   defaultSprintId,
   initialStatus: initialStatusProp,
@@ -374,9 +377,11 @@ export const TaskModal: React.FC<TaskModalProps> = ({
                   className="scrum-input"
                 >
                   <option value="backlog">Backlog</option>
-                  <option value="todo">To do</option>
-                  <option value="in-progress">In progress</option>
-                  <option value="done">Done</option>
+                  {statuses.map((status) => (
+                    <option key={status.id} value={status.id}>
+                      {status.name}
+                    </option>
+                  ))}
                 </select>
               </label>
               <label className="block">

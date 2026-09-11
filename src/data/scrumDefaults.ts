@@ -7,6 +7,11 @@ export const DEFAULT_SCRUM_DATA: ScrumBoardData = {
   version: 1,
   activeSprintId: "sprint-01",
   nextTaskNumber: 107,
+  statuses: [
+    { id: "todo", name: "To do", color: "#579dff", isDone: false },
+    { id: "in-progress", name: "In progress", color: "#f5cd47", isDone: false },
+    { id: "done", name: "Done", color: "#4bce97", isDone: true },
+  ],
   settings: {
     notificationsEnabled: true,
     etaReminders: true,

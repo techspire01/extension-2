@@ -554,6 +554,25 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({
                 />
               </label>
 
+              <label className="flex items-center justify-between p-2.5 rounded-2xl bg-[var(--md-sys-color-surface)] border border-[var(--md-sys-color-outline)]/40 cursor-pointer">
+                <div>
+                  <div className="font-semibold text-xs text-[var(--md-sys-color-on-surface)]">
+                    Show Notepad
+                  </div>
+                  <div className="text-[11px] text-[var(--md-sys-color-on-surface-variant)]">
+                    Display the white square notepad at bottom right
+                  </div>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={settings.showNotepad ?? true}
+                  onChange={(e) =>
+                    onUpdateSettings({ showNotepad: e.target.checked })
+                  }
+                  className="w-4 h-4 accent-[var(--md-sys-color-primary)] cursor-pointer"
+                />
+              </label>
+
               {settings.showClock && (
                 <>
                   <div className="grid grid-cols-2 gap-2">

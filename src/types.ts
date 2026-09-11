@@ -1,29 +1,29 @@
 export type ThemeColorName =
-  | 'blue'
-  | 'red'
-  | 'yellow'
-  | 'green'
-  | 'cyan'
-  | 'pink'
-  | 'orange'
-  | 'purple'
-  | 'teal'
-  | 'custom';
+  | "blue"
+  | "red"
+  | "yellow"
+  | "green"
+  | "cyan"
+  | "pink"
+  | "orange"
+  | "purple"
+  | "teal"
+  | "custom";
 
-export type ThemeMode = 'light' | 'dark' | 'system';
+export type ThemeMode = "light" | "dark" | "system";
 
-export type ClockType = 'analog' | 'digital';
+export type ClockType = "analog" | "digital";
 
 export type SearchEngineKey =
-  | 'google'
-  | 'duckduckgo'
-  | 'bing'
-  | 'brave'
-  | 'youtube'
-  | 'reddit'
-  | 'wikipedia'
-  | 'quora'
-  | 'gemini';
+  | "google"
+  | "duckduckgo"
+  | "bing"
+  | "brave"
+  | "youtube"
+  | "reddit"
+  | "wikipedia"
+  | "quora"
+  | "gemini";
 
 export interface ShortcutItem {
   id: string;
@@ -41,10 +41,10 @@ export interface TodoItem {
   createdAt: number;
 }
 
-export type ScrumStatus = 'backlog' | 'todo' | 'in-progress' | 'done';
-export type ScrumPriority = 'highest' | 'high' | 'medium' | 'low' | 'lowest';
-export type ScrumIssueType = 'task' | 'story' | 'bug';
-export type SprintStatus = 'planned' | 'active' | 'completed';
+export type ScrumStatus = string;
+export type ScrumPriority = "highest" | "high" | "medium" | "low" | "lowest";
+export type ScrumIssueType = "task" | "story" | "bug";
+export type SprintStatus = "planned" | "active" | "completed";
 
 export interface ScrumChecklistItem {
   id: string;
@@ -97,11 +97,18 @@ export interface ScrumSprint {
   createdAt: string;
 }
 
+export interface ScrumStatusDefinition {
+  id: string;
+  name: string;
+  color: string;
+  isDone: boolean;
+}
+
 export interface ScrumFilters {
   query: string;
   priorities: ScrumPriority[];
   statuses: ScrumStatus[];
-  eta: 'all' | 'upcoming' | 'due-soon' | 'overdue' | 'none';
+  eta: "all" | "upcoming" | "due-soon" | "overdue" | "none";
   label: string;
 }
 
@@ -112,14 +119,15 @@ export interface ScrumSettings {
   sprintReminders: boolean;
   reminderMinutes: number;
   defaultPriority: ScrumPriority;
-  defaultSort: 'manual' | 'priority' | 'eta' | 'updated';
-  incompleteSprintAction: 'backlog' | 'next-sprint';
+  defaultSort: "manual" | "priority" | "eta" | "updated";
+  incompleteSprintAction: "backlog" | "next-sprint";
 }
 
 export interface ScrumBoardData {
   version: 1;
   tasks: ScrumTask[];
   sprints: ScrumSprint[];
+  statuses: ScrumStatusDefinition[];
   activeSprintId: string | null;
   settings: ScrumSettings;
   nextTaskNumber: number;
@@ -171,7 +179,7 @@ export interface AppSettings {
   customHexColor: string;
   themeMode: ThemeMode;
   cardOpacity: number; // 0.0 - 1.0
-  wallpaperType: 'none' | 'random' | 'custom';
+  wallpaperType: "none" | "random" | "custom";
   customWallpaperUrl: string;
   wallpaperBlur: number; // 0 - 20px
   wallpaperDim: number; // 0 - 80%
@@ -181,6 +189,7 @@ export interface AppSettings {
   adaptiveIcons: boolean;
   shortcutsPerRow: number;
   shortcutsOnlyIcons?: boolean; // Show only icons without text labels
+  showNotepad?: boolean;
 
   // Clock & Greeting
   showClock: boolean;
@@ -195,7 +204,7 @@ export interface AppSettings {
   // Weather
   showWeather: boolean;
   weatherCardOnly: boolean; // false = full card, true = minimal pill
-  tempUnit: 'C' | 'F';
+  tempUnit: "C" | "F";
   showMinMaxTemp: boolean;
   useGPS: boolean;
   customLocation: string;

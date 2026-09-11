@@ -1,3 +1,4 @@
+import { DEFAULT_SCRUM_DATA } from "../data/scrumDefaults";
 import { ScrumBoardData } from "../types";
 
 const STORAGE_KEY = "mynt_scrum_board";
@@ -27,17 +28,44 @@ export async function loadScrumData(): Promise<ScrumBoardData | null> {
   if (storage) {
     return new Promise((resolve) => {
       storage.get(STORAGE_KEY, (result) =>
-        resolve((result[STORAGE_KEY] as ScrumBoardData) ?? null),
+        resolve(
+          normalizeScrumData((result[STORAGE_KEY] as ScrumBoardData) ?? null),
+        ),
       );
     });
   }
 
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
-    return saved ? JSON.parse(saved) : null;
+    return saved ? normalizeScrumData(JSON.parse(saved)) : null;
   } catch {
     return null;
   }
+}
+
+function normalizeScrumData(
+  data: ScrumBoardData | null,
+): ScrumBoardData | null {
+  if (!data) return null;
+  const rawStatuses =
+    Array.isArray(data.statuses) && data.statuses.length
+      ? data.statuses
+      : DEFAULT_SCRUM_DATA.statuses;
+  return {
+    ...data,
+    statuses: rawStatuses.map((status, index) => {
+      const legacy = status as typeof status & {
+        label?: string;
+        accent?: string;
+      };
+      return {
+        id: status.id || `status-${index + 1}`,
+        name: status.name || legacy.label || `Status ${index + 1}`,
+        color: status.color || legacy.accent || "#579dff",
+        isDone: Boolean(status.isDone || status.id === "done"),
+      };
+    }),
+  };
 }
 
 export async function saveScrumData(data: ScrumBoardData): Promise<void> {
@@ -65,7 +93,7 @@ export function validateScrumImport(value: unknown): ScrumBoardData {
   if (!data.settings || typeof data.nextTaskNumber !== "number") {
     throw new Error("The backup is missing board settings.");
   }
-  return data as ScrumBoardData;
+  return normalizeScrumData(data as ScrumBoardData) as ScrumBoardData;
 }
 
 export function exportScrumData(data: ScrumBoardData) {
