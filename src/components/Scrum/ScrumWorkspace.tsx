@@ -125,6 +125,7 @@ export const ScrumWorkspace: React.FC<ScrumWorkspaceProps> = ({
   const [showNotifications, setShowNotifications] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showSidePanel, setShowSidePanel] = useState(false);
+  const [showStatusConfig, setShowStatusConfig] = useState(false);
   const [newStatusName, setNewStatusName] = useState("");
   const [newStatusColor, setNewStatusColor] = useState("#579dff");
   const [editingTask, setEditingTask] = useState<ScrumTask | null | undefined>(
@@ -161,6 +162,7 @@ export const ScrumWorkspace: React.FC<ScrumWorkspaceProps> = ({
   useEffect(() => {
     if (!isOpen) return;
     setShowSidePanel(false);
+    setShowStatusConfig(false);
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape" && editingTask === undefined) onClose();
     };
@@ -370,7 +372,7 @@ export const ScrumWorkspace: React.FC<ScrumWorkspaceProps> = ({
       onMouseDown={onClose}
     >
       <div
-        className="relative w-full max-w-[1180px] h-[min(820px,calc(100vh-32px))] bg-[#f7f8f9] text-[#172b4d] flex overflow-hidden border border-[#dfe1e6] shadow-2xl"
+        className="scrum-theme relative w-full max-w-[1180px] h-[min(820px,calc(100vh-32px))] bg-[#f7f8f9] text-[#172b4d] flex overflow-hidden border border-[#dfe1e6] shadow-2xl"
         onMouseDown={(event) => event.stopPropagation()}
       >
         {showSidePanel && (
@@ -434,89 +436,108 @@ export const ScrumWorkspace: React.FC<ScrumWorkspaceProps> = ({
             ))}
           </nav>
           <section className="px-3 pt-3 border-t border-white/10 overflow-y-auto custom-scrollbar">
-            <div className="px-3 mb-2 text-[10px] uppercase font-bold text-[#9fadbc]">
-              Configure statuses
-            </div>
-            <div className="space-y-2">
-              {statuses.map((status) => (
-                <div
-                  key={status.id}
-                  className="p-2 bg-white/8 border border-white/10 space-y-2"
-                >
-                  <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setShowStatusConfig((current) => !current)}
+              className="w-full flex items-center justify-between px-3 py-2.5 text-sm font-semibold text-[#b6c2cf] hover:bg-white/10 hover:text-white"
+              aria-expanded={showStatusConfig}
+            >
+              <span className="flex items-center gap-3">
+                <Settings2 className="w-4 h-4" />
+                Configure statuses
+              </span>
+              <ChevronDown
+                className={`w-4 h-4 transition-transform ${showStatusConfig ? "rotate-180" : ""}`}
+              />
+            </button>
+            {showStatusConfig && (
+              <div className="mt-2">
+                <div className="space-y-2">
+                  {statuses.map((status) => (
+                    <div
+                      key={status.id}
+                      className="p-2 bg-white/8 border border-white/10 space-y-2"
+                    >
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="color"
+                          value={status.color}
+                          onChange={(e) =>
+                            board.updateStatus(status.id, {
+                              color: e.target.value,
+                            })
+                          }
+                          className="w-6 h-6 bg-transparent border-0 p-0"
+                          title="Status color"
+                        />
+                        <input
+                          value={status.name}
+                          onChange={(e) =>
+                            board.updateStatus(status.id, {
+                              name: e.target.value,
+                            })
+                          }
+                          className="min-w-0 flex-1 bg-white/10 border border-white/15 px-2 py-1 text-xs text-white outline-none focus:border-[#579dff]"
+                          aria-label={`Rename ${status.name}`}
+                        />
+                        <button
+                          disabled={statuses.length <= 1}
+                          onClick={() => {
+                            if (
+                              confirm(
+                                `Delete ${status.name}? Its tasks will move to another status.`,
+                              )
+                            )
+                              board.deleteStatus(status.id);
+                          }}
+                          className="p-1 text-[#b6c2cf] hover:text-red-300 disabled:opacity-30"
+                          title={`Delete ${status.name}`}
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                      <label className="flex items-center justify-between text-[10px] text-[#b6c2cf]">
+                        <span>Completion status</span>
+                        <input
+                          type="radio"
+                          name="done-status"
+                          checked={status.isDone}
+                          onChange={() =>
+                            board.updateStatus(status.id, { isDone: true })
+                          }
+                        />
+                      </label>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-3 p-2 bg-white/5 border border-white/10 space-y-2">
+                  <input
+                    value={newStatusName}
+                    onChange={(e) => setNewStatusName(e.target.value)}
+                    className="w-full bg-white/10 border border-white/15 px-2 py-1.5 text-xs text-white outline-none"
+                    placeholder="New status name"
+                  />
+                  <div className="flex gap-2">
                     <input
                       type="color"
-                      value={status.color}
-                      onChange={(e) =>
-                        board.updateStatus(status.id, { color: e.target.value })
-                      }
-                      className="w-6 h-6 bg-transparent border-0 p-0"
-                      title="Status color"
-                    />
-                    <input
-                      value={status.name}
-                      onChange={(e) =>
-                        board.updateStatus(status.id, { name: e.target.value })
-                      }
-                      className="min-w-0 flex-1 bg-white/10 border border-white/15 px-2 py-1 text-xs text-white outline-none focus:border-[#579dff]"
-                      aria-label={`Rename ${status.name}`}
+                      value={newStatusColor}
+                      onChange={(e) => setNewStatusColor(e.target.value)}
+                      className="w-8 h-8 bg-transparent border-0 p-0"
                     />
                     <button
-                      disabled={statuses.length <= 1}
                       onClick={() => {
-                        if (
-                          confirm(
-                            `Delete ${status.name}? Its tasks will move to another status.`,
-                          )
-                        )
-                          board.deleteStatus(status.id);
+                        if (!newStatusName.trim()) return;
+                        board.addStatus(newStatusName, newStatusColor);
+                        setNewStatusName("");
                       }}
-                      className="p-1 text-[#b6c2cf] hover:text-red-300 disabled:opacity-30"
-                      title={`Delete ${status.name}`}
+                      className="flex-1 bg-[#0c66e4] px-2 py-1.5 text-xs font-bold hover:bg-[#0055cc]"
                     >
-                      <Trash2 className="w-3.5 h-3.5" />
+                      Add status
                     </button>
                   </div>
-                  <label className="flex items-center justify-between text-[10px] text-[#b6c2cf]">
-                    <span>Completion status</span>
-                    <input
-                      type="radio"
-                      name="done-status"
-                      checked={status.isDone}
-                      onChange={() =>
-                        board.updateStatus(status.id, { isDone: true })
-                      }
-                    />
-                  </label>
                 </div>
-              ))}
-            </div>
-            <div className="mt-3 p-2 bg-white/5 border border-white/10 space-y-2">
-              <input
-                value={newStatusName}
-                onChange={(e) => setNewStatusName(e.target.value)}
-                className="w-full bg-white/10 border border-white/15 px-2 py-1.5 text-xs text-white outline-none"
-                placeholder="New status name"
-              />
-              <div className="flex gap-2">
-                <input
-                  type="color"
-                  value={newStatusColor}
-                  onChange={(e) => setNewStatusColor(e.target.value)}
-                  className="w-8 h-8 bg-transparent border-0 p-0"
-                />
-                <button
-                  onClick={() => {
-                    if (!newStatusName.trim()) return;
-                    board.addStatus(newStatusName, newStatusColor);
-                    setNewStatusName("");
-                  }}
-                  className="flex-1 bg-[#0c66e4] px-2 py-1.5 text-xs font-bold hover:bg-[#0055cc]"
-                >
-                  Add status
-                </button>
               </div>
-            </div>
+            )}
           </section>
           <div className="mt-auto p-4 border-t border-white/10">
             <div className="text-[10px] uppercase font-bold text-[#9fadbc] mb-2">

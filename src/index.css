@@ -1,7 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --main-font-family: 'Plus Jakarta Sans', 'Poppins', system-ui, -apple-system, sans-serif;
+  --main-font-family:
+    "Plus Jakarta Sans", "Poppins", system-ui, -apple-system, sans-serif;
   --md-sys-color-primary: #1d63d8;
   --md-sys-color-on-primary: #ffffff;
   --md-sys-color-primary-container: #dbe8fe;
@@ -30,7 +31,9 @@ body {
   margin: 0;
   padding: 0;
   overflow-x: hidden;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
 }
 
 /* Custom sleek scrollbar */
@@ -184,4 +187,81 @@ body {
   color: #172b4d;
   font-size: 0.75rem;
   font-weight: 700;
+}
+
+.scrum-theme {
+  background-color: var(--md-sys-color-surface) !important;
+  color: var(--md-sys-color-on-surface) !important;
+}
+
+.scrum-theme > aside {
+  background-color: var(--md-sys-color-surface-container-high) !important;
+  color: var(--md-sys-color-on-surface) !important;
+  border-right: 1px solid var(--md-sys-color-outline);
+}
+
+.scrum-theme .bg-white,
+.scrum-theme [class*="bg-[#ffffff]"] {
+  background-color: var(--md-sys-color-surface-container-high) !important;
+}
+
+.scrum-theme [class*="bg-[#f7f8f9]"] {
+  background-color: var(--md-sys-color-surface) !important;
+}
+
+.scrum-theme [class*="bg-[#ebecf0]"],
+.scrum-theme [class*="bg-[#dfe1e6]"] {
+  background-color: var(--md-sys-color-surface-container) !important;
+}
+
+.scrum-theme [class*="bg-[#deebff]"] {
+  background-color: var(--md-sys-color-primary-container) !important;
+}
+
+.scrum-theme [class*="bg-[#0c66e4]"] {
+  background-color: var(--md-sys-color-primary) !important;
+  color: var(--md-sys-color-on-primary) !important;
+}
+
+.scrum-theme [class*="text-[#172b4d]"] {
+  color: var(--md-sys-color-on-surface) !important;
+}
+
+.scrum-theme [class*="text-[#44546f]"],
+.scrum-theme [class*="text-[#6b778c]"],
+.scrum-theme [class*="text-[#9fadbc]"],
+.scrum-theme [class*="text-[#b6c2cf]"] {
+  color: var(--md-sys-color-on-surface-variant) !important;
+}
+
+.scrum-theme [class*="text-[#0c66e4]"] {
+  color: var(--md-sys-color-primary) !important;
+}
+
+.scrum-theme [class*="border-[#dfe1e6]"],
+.scrum-theme [class*="border-[#ebecf0]"],
+.scrum-theme [class*="border-[#8590a2]"],
+.scrum-theme [class*="border-[#c1c7d0]"] {
+  border-color: var(--md-sys-color-outline) !important;
+}
+
+.scrum-theme .scrum-input,
+.scrum-theme .scrum-popover {
+  background-color: var(--md-sys-color-surface-container) !important;
+  color: var(--md-sys-color-on-surface) !important;
+  border-color: var(--md-sys-color-outline) !important;
+}
+
+.scrum-theme .scrum-input:focus {
+  border-color: var(--md-sys-color-primary) !important;
+  box-shadow: 0 0 0 1px var(--md-sys-color-primary) !important;
+}
+
+.scrum-theme .scrum-icon-btn,
+.scrum-theme .scrum-secondary-btn {
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.scrum-theme .scrum-secondary-btn {
+  background-color: var(--md-sys-color-surface-container-high);
 }

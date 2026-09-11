@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { StickyNote } from "lucide-react";
+import { Minimize2, StickyNote } from "lucide-react";
 import { AppSettings } from "../types";
 
 const STORAGE_KEY = "mynt_notepad";
@@ -51,6 +51,7 @@ interface NotepadWidgetProps {
 export const NotepadWidget: React.FC<NotepadWidgetProps> = ({ settings }) => {
   const [note, setNote] = useState("");
   const [loaded, setLoaded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   useEffect(() => {
     let current = true;
@@ -73,24 +74,49 @@ export const NotepadWidget: React.FC<NotepadWidgetProps> = ({ settings }) => {
 
   if (!(settings.showNotepad ?? true)) return null;
 
+  if (!isExpanded) {
+    return (
+      <button
+        type="button"
+        onClick={() => setIsExpanded(true)}
+        className="fixed right-4 bottom-4 z-20 w-12 h-12 rounded-xl bg-[var(--md-sys-color-primary-container)] text-[var(--md-sys-color-on-primary-container)] border border-[var(--md-sys-color-outline)] shadow-lg flex items-center justify-center hover:shadow-xl transition-all cursor-pointer"
+        title="Open notepad"
+        aria-label="Open notepad"
+      >
+        <StickyNote className="w-5 h-5" />
+      </button>
+    );
+  }
+
   return (
     <section
       aria-label="Notepad"
-      className="fixed right-4 bottom-4 z-20 w-[min(260px,calc(100vw-32px))] aspect-square bg-white text-[#172b4d] border border-[#dfe1e6] shadow-xl flex flex-col"
+      className="fixed right-4 bottom-4 z-20 w-[min(260px,calc(100vw-32px))] aspect-square bg-[var(--md-sys-color-surface-container-high)] text-[var(--md-sys-color-on-surface)] border border-[var(--md-sys-color-outline)] shadow-xl flex flex-col"
     >
-      <header className="h-11 px-3 flex items-center justify-between border-b border-[#ebecf0] shrink-0">
+      <header className="h-11 px-3 flex items-center justify-between border-b border-[var(--md-sys-color-outline)] shrink-0">
         <div className="flex items-center gap-2">
-          <StickyNote className="w-4 h-4 text-[#0c66e4]" />
+          <StickyNote className="w-4 h-4 text-[var(--md-sys-color-primary)]" />
           <h2 className="text-xs font-bold">Notepad</h2>
         </div>
-        <span className="text-[9px] uppercase font-bold text-[#6b778c]">
-          Autosaved
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="text-[9px] uppercase font-bold text-[var(--md-sys-color-on-surface-variant)]">
+            Autosaved
+          </span>
+          <button
+            type="button"
+            onClick={() => setIsExpanded(false)}
+            className="p-1 rounded-md hover:bg-[var(--md-sys-color-hover-tint)] text-[var(--md-sys-color-on-surface-variant)] cursor-pointer"
+            title="Minimize notepad"
+            aria-label="Minimize notepad"
+          >
+            <Minimize2 className="w-3.5 h-3.5" />
+          </button>
+        </div>
       </header>
       <textarea
         value={note}
         onChange={(event) => setNote(event.target.value)}
-        className="flex-1 min-h-0 w-full resize-none border-0 bg-white p-3 text-sm leading-5 text-[#172b4d] outline-none placeholder:text-[#9fadbc]"
+        className="flex-1 min-h-0 w-full resize-none border-0 bg-transparent p-3 text-sm leading-5 text-[var(--md-sys-color-on-surface)] outline-none placeholder:text-[var(--md-sys-color-on-surface-variant)]"
         placeholder="Write a quick note..."
         aria-label="Notepad text"
       />

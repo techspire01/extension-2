@@ -167,7 +167,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
         role="dialog"
         aria-modal="true"
         aria-label={task ? `Edit ${task.key}` : "Create task"}
-        className="w-full max-w-4xl max-h-[92vh] overflow-hidden bg-[#ffffff] text-[#172b4d] border border-[#dfe1e6] shadow-2xl flex flex-col"
+        className="scrum-theme w-full max-w-4xl max-h-[92vh] overflow-hidden bg-[#ffffff] text-[#172b4d] border border-[#dfe1e6] shadow-2xl flex flex-col"
         onMouseDown={(event) => event.stopPropagation()}
       >
         <header className="flex items-center justify-between px-5 py-4 border-b border-[#dfe1e6]">
