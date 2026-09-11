@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback, useLayoutEffect } from 'react';
 import { createPortal } from 'react-dom';
 import {
-  CheckSquare,
+  Columns3,
   Bookmark,
   Grid,
   Settings,
@@ -176,10 +176,10 @@ export const TopBar: React.FC<TopBarProps> = ({
           <button
             id="todoListCont"
             onClick={handleOpenTodoList}
-            title="To-Do List"
+            title="Scrum Task Manager"
             className="relative flex items-center justify-center w-11 h-11 rounded-2xl bg-[var(--md-sys-color-primary-container)] text-[var(--md-sys-color-on-primary-container)] hover:shadow-md transition-all duration-200 cursor-pointer active:scale-95 group"
           >
-            <CheckSquare className="w-5 h-5 transition-transform group-hover:scale-110" />
+            <Columns3 className="w-5 h-5 transition-transform group-hover:scale-110" />
             {unreadTodosCount > 0 && (
               <span
                 id="todo-badge"
@@ -188,7 +188,7 @@ export const TopBar: React.FC<TopBarProps> = ({
                 {unreadTodosCount}
               </span>
             )}
-            <span className="sr-only">Open To-Do List</span>
+            <span className="sr-only">Open Scrum Task Manager</span>
           </button>
         )}
 

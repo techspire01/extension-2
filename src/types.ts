@@ -41,6 +41,90 @@ export interface TodoItem {
   createdAt: number;
 }
 
+export type ScrumStatus = 'backlog' | 'todo' | 'in-progress' | 'done';
+export type ScrumPriority = 'highest' | 'high' | 'medium' | 'low' | 'lowest';
+export type ScrumIssueType = 'task' | 'story' | 'bug';
+export type SprintStatus = 'planned' | 'active' | 'completed';
+
+export interface ScrumChecklistItem {
+  id: string;
+  text: string;
+  completed: boolean;
+}
+
+export interface ScrumComment {
+  id: string;
+  text: string;
+  createdAt: string;
+}
+
+export interface ScrumHistoryEntry {
+  id: string;
+  action: string;
+  detail: string;
+  timestamp: string;
+}
+
+export interface ScrumTask {
+  id: string;
+  key: string;
+  title: string;
+  description: string;
+  type: ScrumIssueType;
+  status: ScrumStatus;
+  priority: ScrumPriority;
+  sprintId: string | null;
+  eta: string | null;
+  estimatedMinutes: number | null;
+  labels: string[];
+  checklist: ScrumChecklistItem[];
+  comments: ScrumComment[];
+  history: ScrumHistoryEntry[];
+  createdAt: string;
+  updatedAt: string;
+  completedAt: string | null;
+  reminderSentAt?: string | null;
+  overdueNotifiedAt?: string | null;
+}
+
+export interface ScrumSprint {
+  id: string;
+  name: string;
+  goal: string;
+  startDate: string;
+  endDate: string;
+  status: SprintStatus;
+  createdAt: string;
+}
+
+export interface ScrumFilters {
+  query: string;
+  priorities: ScrumPriority[];
+  statuses: ScrumStatus[];
+  eta: 'all' | 'upcoming' | 'due-soon' | 'overdue' | 'none';
+  label: string;
+}
+
+export interface ScrumSettings {
+  notificationsEnabled: boolean;
+  etaReminders: boolean;
+  overdueReminders: boolean;
+  sprintReminders: boolean;
+  reminderMinutes: number;
+  defaultPriority: ScrumPriority;
+  defaultSort: 'manual' | 'priority' | 'eta' | 'updated';
+  incompleteSprintAction: 'backlog' | 'next-sprint';
+}
+
+export interface ScrumBoardData {
+  version: 1;
+  tasks: ScrumTask[];
+  sprints: ScrumSprint[];
+  activeSprintId: string | null;
+  settings: ScrumSettings;
+  nextTaskNumber: number;
+}
+
 export interface BookmarkItem {
   id: string;
   title: string;

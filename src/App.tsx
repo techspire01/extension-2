@@ -28,7 +28,7 @@ import { WeatherWidget } from './components/WeatherWidget';
 import { SearchBar } from './components/SearchBar';
 import { ShortcutsGrid } from './components/ShortcutsGrid';
 import { AIToolsDock } from './components/AIToolsDock';
-import { TodoListDrawer } from './components/TodoListDrawer';
+import { ScrumWorkspace } from './components/Scrum/ScrumWorkspace';
 import { BookmarksDrawer } from './components/BookmarksDrawer';
 import { GoogleAppsMenu } from './components/GoogleAppsMenu';
 import { SettingsDrawer } from './components/SettingsDrawer';
@@ -214,6 +214,9 @@ export default function App() {
   const [isGoogleAppsOpen, setIsGoogleAppsOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isExtensionModalOpen, setIsExtensionModalOpen] = useState(false);
+  const [openScrumTaskCount, setOpenScrumTaskCount] = useState(
+    todos.filter((todo) => !todo.completed).length
+  );
 
   useEffect(() => {
     const handleSettingsShortcut = (event: KeyboardEvent) => {
@@ -408,7 +411,7 @@ export default function App() {
         {/* Top Bar Header */}
         <TopBar
         settings={settings}
-        unreadTodosCount={unreadTodosCount}
+        unreadTodosCount={openScrumTaskCount}
         bookmarkFolders={allBookmarkFolders}
         folderCounts={folderCounts}
         bookmarks={bookmarks}
@@ -492,14 +495,11 @@ export default function App() {
         />
 
       {/* Modals & Slide-over Drawers */}
-        <TodoListDrawer
+        <ScrumWorkspace
         isOpen={isTodoListOpen}
         onClose={() => setIsTodoListOpen(false)}
-        todos={todos}
-        onAddTodo={handleAddTodo}
-        onToggleTodo={handleToggleTodo}
-        onDeleteTodo={handleDeleteTodo}
-        onClearCompleted={handleClearCompletedTodos}
+        legacyTodos={todos}
+        onOpenTaskCountChange={setOpenScrumTaskCount}
         />
 
         <BookmarksDrawer
