@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   X,
   Palette,
@@ -24,6 +24,7 @@ import {
   ArrowUp,
   ArrowDown,
   Check,
+  MapPin,
 } from 'lucide-react';
 import {
   AppSettings,
@@ -36,6 +37,7 @@ import {
 } from '../types';
 import { PRESET_THEMES } from '../theme/materialTheme';
 import { SEARCH_ENGINES, GOOGLE_APPS } from '../data/defaultData';
+import { LocationSuggestion, searchLocations } from '../utils/weatherApi';
 
 const APP_ICONS_LIST = [
   'Search',
@@ -95,6 +97,35 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({
   const [appName, setAppName] = useState('');
   const [appUrl, setAppUrl] = useState('');
   const [appIcon, setAppIcon] = useState('Globe');
+  const [locationSuggestions, setLocationSuggestions] = useState<LocationSuggestion[]>([]);
+  const [isSearchingLocations, setIsSearchingLocations] = useState(false);
+  const [showLocationSuggestions, setShowLocationSuggestions] = useState(false);
+
+  useEffect(() => {
+    if (settings.useGPS || settings.customLocation.trim().length < 2) {
+      setLocationSuggestions([]);
+      setIsSearchingLocations(false);
+      return;
+    }
+
+    let isCurrent = true;
+    setIsSearchingLocations(true);
+    const timeoutId = window.setTimeout(async () => {
+      try {
+        const results = await searchLocations(settings.customLocation);
+        if (isCurrent) setLocationSuggestions(results);
+      } catch {
+        if (isCurrent) setLocationSuggestions([]);
+      } finally {
+        if (isCurrent) setIsSearchingLocations(false);
+      }
+    }, 350);
+
+    return () => {
+      isCurrent = false;
+      window.clearTimeout(timeoutId);
+    };
+  }, [settings.customLocation, settings.useGPS]);
 
   const handleStartAddApp = () => {
     setIsAddingApp(true);
@@ -365,17 +396,17 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({
               </div>
             </div>
 
-            {/* Card Opacity / Transparency */}
+            {/* Global UI Opacity / Transparency */}
             <div className="pt-2">
               <div className="flex items-center justify-between text-xs font-medium text-[var(--md-sys-color-on-surface-variant)] mb-1">
-                <span id="opacityTitle">Widgets Opacity & Glassmorphism</span>
+                <span id="opacityTitle">UI Transparency & Glassmorphism</span>
                 <span id="opacityLevel" className="font-bold text-[var(--md-sys-color-primary)]">
                   {Math.round(settings.cardOpacity * 100)}%
                 </span>
               </div>
               <input
                 type="range"
-                min="0.5"
+                min="0"
                 max="1.0"
                 step="0.05"
                 value={settings.cardOpacity}
@@ -384,6 +415,9 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({
                 }
                 className="w-full accent-[var(--md-sys-color-primary)] cursor-pointer"
               />
+              <p className="mt-1 text-[10px] text-[var(--md-sys-color-on-surface-variant)]">
+                At 0%, reopen Settings with Ctrl/Cmd + Shift + S.
+              </p>
             </div>
           </section>
 
@@ -712,7 +746,7 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({
                     </label>
 
                     {!settings.useGPS && (
-                      <div>
+                      <div className="relative">
                         <span id="UserLocText" className="block text-[11px] font-semibold text-[var(--md-sys-color-on-surface-variant)] uppercase mb-1">
                           Manual City or Region
                         </span>
@@ -720,11 +754,53 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({
                           type="text"
                           placeholder="e.g. London, Tokyo, Paris"
                           value={settings.customLocation}
-                          onChange={(e) =>
-                            onUpdateSettings({ customLocation: e.target.value })
-                          }
-                          className="w-full px-3 py-1.5 rounded-xl bg-[var(--md-sys-color-surface-container)] border border-[var(--md-sys-color-outline)] text-xs text-[var(--md-sys-color-on-surface)] outline-none"
+                          onFocus={() => setShowLocationSuggestions(true)}
+                          onChange={(e) => {
+                            onUpdateSettings({ customLocation: e.target.value });
+                            setShowLocationSuggestions(true);
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Escape') setShowLocationSuggestions(false);
+                          }}
+                          autoComplete="off"
+                          className="w-full px-3 py-1.5 rounded-xl bg-[var(--md-sys-color-surface-container)] border border-[var(--md-sys-color-outline)] text-xs text-[var(--md-sys-color-on-surface)] outline-none focus:ring-2 focus:ring-[var(--md-sys-color-primary)]"
                         />
+                        {showLocationSuggestions && settings.customLocation.trim().length >= 2 && (
+                          <div className="absolute left-0 right-0 top-full mt-1 z-20 rounded-xl overflow-hidden border border-[var(--md-sys-color-outline)] bg-[var(--md-sys-color-surface-container-high)] shadow-xl">
+                            {isSearchingLocations ? (
+                              <div className="px-3 py-2 text-xs text-[var(--md-sys-color-on-surface-variant)]">
+                                Searching locations...
+                              </div>
+                            ) : locationSuggestions.length > 0 ? (
+                              locationSuggestions.map((location) => {
+                                const label = [
+                                  location.name,
+                                  location.admin1,
+                                  location.country,
+                                ].filter(Boolean).join(', ');
+                                return (
+                                  <button
+                                    key={`${location.id}-${location.latitude}-${location.longitude}`}
+                                    type="button"
+                                    onMouseDown={(e) => e.preventDefault()}
+                                    onClick={() => {
+                                      onUpdateSettings({ customLocation: label });
+                                      setShowLocationSuggestions(false);
+                                    }}
+                                    className="w-full flex items-center gap-2 px-3 py-2 text-left text-xs text-[var(--md-sys-color-on-surface)] hover:bg-[var(--md-sys-color-hover-tint)] cursor-pointer"
+                                  >
+                                    <MapPin className="w-3.5 h-3.5 shrink-0 text-[var(--md-sys-color-primary)]" />
+                                    <span className="truncate">{label}</span>
+                                  </button>
+                                );
+                              })
+                            ) : (
+                              <div className="px-3 py-2 text-xs text-[var(--md-sys-color-on-surface-variant)]">
+                                No matching city found
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>

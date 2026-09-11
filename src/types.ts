@@ -86,7 +86,7 @@ export interface AppSettings {
   themeColor: ThemeColorName;
   customHexColor: string;
   themeMode: ThemeMode;
-  cardOpacity: number; // 0.5 - 1.0
+  cardOpacity: number; // 0.0 - 1.0
   wallpaperType: 'none' | 'random' | 'custom';
   customWallpaperUrl: string;
   wallpaperBlur: number; // 0 - 20px

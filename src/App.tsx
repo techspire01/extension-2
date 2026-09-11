@@ -215,6 +215,17 @@ export default function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isExtensionModalOpen, setIsExtensionModalOpen] = useState(false);
 
+  useEffect(() => {
+    const handleSettingsShortcut = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toLowerCase() === 's') {
+        event.preventDefault();
+        setIsSettingsOpen(true);
+      }
+    };
+    window.addEventListener('keydown', handleSettingsShortcut);
+    return () => window.removeEventListener('keydown', handleSettingsShortcut);
+  }, []);
+
   // Sync settings with localStorage and apply dynamic Material You variables
   useEffect(() => {
     localStorage.setItem('mynt_settings', JSON.stringify(settings));
@@ -386,8 +397,16 @@ export default function App() {
         </div>
       )}
 
-      {/* Top Bar Header */}
-      <TopBar
+      <div
+        className="relative min-h-screen w-full flex flex-col justify-between transition-opacity duration-300"
+        style={{
+          opacity: settings.cardOpacity,
+          pointerEvents: settings.cardOpacity === 0 ? 'none' : 'auto',
+        }}
+        aria-hidden={settings.cardOpacity === 0}
+      >
+        {/* Top Bar Header */}
+        <TopBar
         settings={settings}
         unreadTodosCount={unreadTodosCount}
         bookmarkFolders={allBookmarkFolders}
@@ -413,10 +432,10 @@ export default function App() {
           isSettingsOpen ||
           isExtensionModalOpen
         }
-      />
+        />
 
       {/* Main Center Content */}
-      <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 py-4 max-w-5xl mx-auto w-full">
+        <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 py-4 max-w-5xl mx-auto w-full">
         {/* Main Hero Row: Clock on the left side of Search Bar, with Weather on the right */}
         <div className="w-full flex flex-col md:flex-row items-center justify-center gap-6 lg:gap-8 mb-5">
           {/* Left: Clock Widget */}
@@ -463,17 +482,17 @@ export default function App() {
           onReorderShortcuts={(reordered) => setShortcuts(reordered)}
           onUpdateSettings={handleUpdateSettings}
         />
-      </main>
+        </main>
 
       {/* Floating AI Tools Dock at bottom */}
-      <AIToolsDock
-        settings={settings}
-        tools={aiTools}
-        onOpenSettings={() => setIsSettingsOpen(true)}
-      />
+        <AIToolsDock
+          settings={settings}
+          tools={aiTools}
+          onOpenSettings={() => setIsSettingsOpen(true)}
+        />
 
       {/* Modals & Slide-over Drawers */}
-      <TodoListDrawer
+        <TodoListDrawer
         isOpen={isTodoListOpen}
         onClose={() => setIsTodoListOpen(false)}
         todos={todos}
@@ -481,9 +500,9 @@ export default function App() {
         onToggleTodo={handleToggleTodo}
         onDeleteTodo={handleDeleteTodo}
         onClearCompleted={handleClearCompletedTodos}
-      />
+        />
 
-      <BookmarksDrawer
+        <BookmarksDrawer
         isOpen={isBookmarksOpen}
         onClose={() => setIsBookmarksOpen(false)}
         bookmarks={bookmarks}
@@ -495,14 +514,20 @@ export default function App() {
         onAddBookmark={handleAddBookmark}
         onUpdateBookmark={handleUpdateBookmark}
         onDeleteBookmark={handleDeleteBookmark}
-      />
+        />
 
-      <GoogleAppsMenu
+        <GoogleAppsMenu
         isOpen={isGoogleAppsOpen}
         onClose={() => setIsGoogleAppsOpen(false)}
         apps={googleApps}
         onOpenSettings={() => setIsSettingsOpen(true)}
-      />
+        />
+
+        <ExtensionExportModal
+          isOpen={isExtensionModalOpen}
+          onClose={() => setIsExtensionModalOpen(false)}
+        />
+      </div>
 
       <SettingsDrawer
         isOpen={isSettingsOpen}
@@ -516,10 +541,6 @@ export default function App() {
         onUpdateGoogleApps={setGoogleApps}
       />
 
-      <ExtensionExportModal
-        isOpen={isExtensionModalOpen}
-        onClose={() => setIsExtensionModalOpen(false)}
-      />
     </div>
   );
 }

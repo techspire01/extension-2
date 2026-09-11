@@ -76,3 +76,37 @@ body {
 .animate-spin-slow {
   animation: spin-slow 20s linear infinite;
 }
+
+.glass-surface {
+  background-color: var(--md-sys-color-surface-container);
+  backdrop-filter: blur(18px) saturate(1.15);
+  -webkit-backdrop-filter: blur(18px) saturate(1.15);
+}
+
+.glass-surface-high {
+  background-color: var(--md-sys-color-surface-container-high);
+  backdrop-filter: blur(20px) saturate(1.15);
+  -webkit-backdrop-filter: blur(20px) saturate(1.15);
+}
+
+.shortcuts-grid {
+  grid-template-columns: repeat(3, 4rem);
+}
+
+@media (min-width: 640px) {
+  .shortcuts-grid {
+    grid-template-columns: repeat(4, 4.5rem);
+  }
+}
+
+@media (min-width: 768px) {
+  .shortcuts-grid {
+    grid-template-columns: repeat(5, 4.5rem);
+  }
+}
+
+@media (min-width: 1024px) {
+  .shortcuts-grid {
+    grid-template-columns: repeat(var(--shortcut-columns, 6), 4.5rem);
+  }
+}

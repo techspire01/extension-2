@@ -70,7 +70,7 @@ export const AIToolsDock: React.FC<AIToolsDockProps> = ({
         {isExpanded && (
           <div
             id="toolsCont"
-            className="mb-2 p-2.5 rounded-3xl bg-[var(--md-sys-color-surface-container-high)]/95 backdrop-blur-2xl border border-[var(--md-sys-color-outline)] shadow-2xl flex items-center flex-wrap justify-center gap-1.5 max-w-xl animate-in fade-in slide-in-from-bottom-2 duration-200"
+            className="glass-surface-high mb-2 p-2.5 rounded-3xl border border-[var(--md-sys-color-outline)] shadow-2xl flex items-center flex-wrap justify-center gap-1.5 max-w-xl animate-in fade-in slide-in-from-bottom-2 duration-200"
           >
             {enabledTools.map((tool) => (
               <a
@@ -105,7 +105,7 @@ export const AIToolsDock: React.FC<AIToolsDockProps> = ({
         <button
           id="aiToolsIcon"
           onClick={() => setIsExpanded(!isExpanded)}
-          className="flex items-center gap-2 px-4 py-2 rounded-full bg-[var(--md-sys-color-surface-container)]/90 hover:bg-[var(--md-sys-color-surface-container)] backdrop-blur-xl border border-[var(--md-sys-color-outline)] shadow-md hover:shadow-lg text-xs font-bold text-[var(--md-sys-color-on-surface)] transition-all duration-200 active:scale-95 cursor-pointer"
+          className="glass-surface flex items-center gap-2 px-4 py-2 rounded-full hover:bg-[var(--md-sys-color-surface-container)] border border-[var(--md-sys-color-outline)] shadow-md hover:shadow-lg text-xs font-bold text-[var(--md-sys-color-on-surface)] transition-all duration-200 active:scale-95 cursor-pointer"
         >
           <Sparkles className="w-4 h-4 text-[var(--md-sys-color-primary)] animate-pulse" />
           <span id="ai_tools" className="tracking-wide">

@@ -197,7 +197,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
       {/* Search Input Bar */}
       <div
         id="searchbar"
-        className="relative flex items-center w-full h-14 sm:h-16 px-3 rounded-full bg-[var(--md-sys-color-surface-container)]/90 backdrop-blur-xl border border-[var(--md-sys-color-outline)] shadow-lg hover:shadow-xl transition-all duration-300 focus-within:ring-2 focus-within:ring-[var(--md-sys-color-primary)] focus-within:border-transparent"
+        className="glass-surface relative flex items-center w-full h-14 sm:h-16 px-3 rounded-full border border-[var(--md-sys-color-outline)] shadow-lg hover:shadow-xl transition-all duration-300 focus-within:ring-2 focus-within:ring-[var(--md-sys-color-primary)] focus-within:border-transparent"
       >
         {/* Search Engine Selector Dropdown */}
         <div className="relative shrink-0" ref={dropdownRef}>
@@ -265,11 +265,11 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           onFocus={() => setShowSuggestions(true)}
           onKeyDown={handleKeyDown}
           placeholder={currentEngineConfig.placeholder}
-          className="flex-1 bg-transparent px-3 text-sm sm:text-base text-[var(--md-sys-color-on-surface)] placeholder-[var(--md-sys-color-on-surface-variant)]/70 outline-none font-normal"
+          className="flex-1 min-w-0 bg-transparent px-2 sm:px-3 text-sm sm:text-base text-[var(--md-sys-color-on-surface)] placeholder-[var(--md-sys-color-on-surface-variant)]/70 outline-none font-normal"
         />
 
         {/* Action icons: Voice, Search */}
-        <div className="flex items-center gap-1 sm:gap-2 pr-1">
+        <div className="flex items-center gap-0.5 sm:gap-2 pr-1 shrink-0">
           {/* Voice Search */}
           {settings.showVoiceSearch && (
             <button
@@ -277,7 +277,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
               type="button"
               onClick={toggleVoiceSearch}
               title={isListening ? 'Listening...' : 'Voice Search'}
-              className={`p-2 rounded-full transition-all duration-200 cursor-pointer ${
+              className={`p-1.5 sm:p-2 rounded-full transition-all duration-200 cursor-pointer ${
                 isListening
                   ? 'bg-red-500 text-white animate-pulse shadow-md'
                   : 'text-[var(--md-sys-color-on-surface-variant)] hover:text-[var(--md-sys-color-primary)] hover:bg-[var(--md-sys-color-hover-tint)]'
@@ -297,7 +297,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
             type="button"
             onClick={() => handleExecuteSearch()}
             title="Search"
-            className="flex items-center justify-center w-10 h-10 rounded-full bg-[var(--md-sys-color-primary)] text-[var(--md-sys-color-on-primary)] hover:shadow-md active:scale-95 transition-all duration-200 cursor-pointer"
+            className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[var(--md-sys-color-primary)] text-[var(--md-sys-color-on-primary)] hover:shadow-md active:scale-95 transition-all duration-200 cursor-pointer"
           >
             <ArrowRight className="w-4 h-4" />
             <span className="sr-only">Search</span>
@@ -308,7 +308,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
         {showSuggestions && filteredSuggestions.length > 0 && (
           <div
             id="resultBox"
-            className="absolute top-full left-0 right-0 mt-2 py-2 rounded-3xl bg-[var(--md-sys-color-surface-container-high)]/95 backdrop-blur-xl border border-[var(--md-sys-color-outline)] shadow-2xl z-40 overflow-hidden"
+            className="glass-surface-high absolute top-full left-0 right-0 mt-2 py-2 rounded-3xl border border-[var(--md-sys-color-outline)] shadow-2xl z-40 overflow-hidden"
           >
             <div className="px-4 py-1.5 flex items-center gap-1.5 text-xs font-semibold text-[var(--md-sys-color-on-surface-variant)]">
               <TrendingUp className="w-3.5 h-3.5 text-[var(--md-sys-color-primary)]" />

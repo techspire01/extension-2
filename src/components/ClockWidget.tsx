@@ -96,7 +96,7 @@ export const ClockWidget: React.FC<ClockWidgetProps> = ({
         <>
           <div
             id="analogClock"
-          className="relative w-36 h-36 sm:w-44 sm:h-44 rounded-full border-4 border-[var(--md-sys-color-outline)] bg-[var(--md-sys-color-surface-container)]/80 backdrop-blur-md shadow-lg flex items-center justify-center transition-all duration-300 hover:scale-105"
+          className="glass-surface relative w-36 h-36 sm:w-44 sm:h-44 rounded-full border-4 border-[var(--md-sys-color-outline)] shadow-lg flex items-center justify-center transition-all duration-300 hover:scale-105"
         >
           {/* Hour tick marks */}
           {[0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330].map(
@@ -157,7 +157,7 @@ export const ClockWidget: React.FC<ClockWidgetProps> = ({
         {/* 12-hr Digital Time including seconds below analog clock */}
         <div
           id="analog-digital-time"
-          className="mt-2.5 px-3.5 py-1 rounded-2xl bg-[var(--md-sys-color-surface-container)]/80 backdrop-blur-md border border-[var(--md-sys-color-outline)]/40 shadow-xs flex items-center gap-1.5 text-sm sm:text-base font-bold text-[var(--md-sys-color-on-surface)] tracking-wide"
+          className="glass-surface mt-2.5 px-3.5 py-1 rounded-2xl border border-[var(--md-sys-color-outline)]/40 shadow-xs flex items-center gap-1.5 text-sm sm:text-base font-bold text-[var(--md-sys-color-on-surface)] tracking-wide"
         >
           <span>
             {formatted12Hours}:{formattedMinutes}:{formattedSeconds}
@@ -220,7 +220,7 @@ export const ClockWidget: React.FC<ClockWidgetProps> = ({
       {/* Date Pill */}
       <div
         id="date"
-        className="mt-1.5 px-3 py-1 rounded-full text-xs sm:text-sm font-medium tracking-wide bg-[var(--md-sys-color-surface-container)] text-[var(--md-sys-color-on-surface-variant)] shadow-sm border border-[var(--md-sys-color-outline)]/40"
+        className="glass-surface mt-1.5 px-3 py-1 rounded-full text-xs sm:text-sm font-medium tracking-wide text-[var(--md-sys-color-on-surface-variant)] shadow-sm border border-[var(--md-sys-color-outline)]/40"
       >
         {formattedDate}
       </div>

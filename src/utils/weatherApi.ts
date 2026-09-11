@@ -1,5 +1,15 @@
 import { WeatherData } from '../types';
 
+export interface LocationSuggestion {
+  id: number;
+  name: string;
+  admin1?: string;
+  country?: string;
+  countryCode?: string;
+  latitude: number;
+  longitude: number;
+}
+
 const WMO_CODE_MAP: Record<number, { condition: string; isRain: boolean }> = {
   0: { condition: 'Clear Sky', isRain: false },
   1: { condition: 'Mainly Clear', isRain: false },
@@ -25,6 +35,65 @@ const WMO_CODE_MAP: Record<number, { condition: string; isRain: boolean }> = {
   99: { condition: 'Thunderstorm with Heavy Hail', isRain: true },
 };
 
+export async function searchLocations(query: string): Promise<LocationSuggestion[]> {
+  const trimmedQuery = query.trim();
+  if (trimmedQuery.length < 2) return [];
+
+  const response = await fetch(
+    `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(
+      trimmedQuery
+    )}&count=8&language=en&format=json`
+  );
+  if (!response.ok) throw new Error('Location search unavailable');
+
+  const data = await response.json();
+  return (data.results ?? []).map((result: any) => ({
+    id: result.id,
+    name: result.name,
+    admin1: result.admin1,
+    country: result.country,
+    countryCode: result.country_code,
+    latitude: result.latitude,
+    longitude: result.longitude,
+  }));
+}
+
+const formatLocationName = (location: LocationSuggestion) => {
+  const region = location.admin1 && location.admin1 !== location.name
+    ? location.admin1
+    : location.countryCode?.toUpperCase() || location.country;
+  return [location.name, region].filter(Boolean).join(', ');
+};
+
+async function reverseGeocode(latitude: number, longitude: number): Promise<string> {
+  try {
+    const response = await fetch(
+      `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
+    );
+    if (!response.ok) return 'Current location';
+    const data = await response.json();
+    const city = data.city || data.locality || data.principalSubdivision;
+    const countryCode = data.countryCode?.toUpperCase();
+    return [city, countryCode].filter(Boolean).join(', ') || 'Current location';
+  } catch {
+    return 'Current location';
+  }
+}
+
+async function getApproximateLocation() {
+  const response = await fetch('https://ipwho.is/');
+  if (!response.ok) throw new Error('Approximate location unavailable');
+  const data = await response.json();
+  if (!data.success || typeof data.latitude !== 'number' || typeof data.longitude !== 'number') {
+    throw new Error('Approximate location unavailable');
+  }
+  return {
+    latitude: data.latitude as number,
+    longitude: data.longitude as number,
+    cityName: [data.city, data.country_code?.toUpperCase()].filter(Boolean).join(', '),
+  };
+}
+
 export async function fetchWeather(
   useGPS: boolean,
   customLocation: string
@@ -35,26 +104,11 @@ export async function fetchWeather(
 
   // 1. Try Custom location if specified
   if (customLocation && customLocation.trim().length > 0) {
-    try {
-      const geoRes = await fetch(
-        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(
-          customLocation.trim()
-        )}&count=1&language=en&format=json`
-      );
-      if (geoRes.ok) {
-        const geoData = await geoRes.json();
-        if (geoData.results && geoData.results.length > 0) {
-          lat = geoData.results[0].latitude;
-          lon = geoData.results[0].longitude;
-          cityName = geoData.results[0].name;
-          if (geoData.results[0].country_code) {
-            cityName += `, ${geoData.results[0].country_code.toUpperCase()}`;
-          }
-        }
-      }
-    } catch {
-      // Fallback
-    }
+    const [location] = await searchLocations(customLocation);
+    if (!location) throw new Error(`Location not found: ${customLocation}`);
+    lat = location.latitude;
+    lon = location.longitude;
+    cityName = formatLocationName(location);
   } else if (useGPS && typeof navigator !== 'undefined' && 'geolocation' in navigator) {
     // 2. Try GPS
     try {
@@ -66,12 +120,12 @@ export async function fetchWeather(
       });
       lat = pos.coords.latitude;
       lon = pos.coords.longitude;
-      cityName = 'Your Location';
+      cityName = await reverseGeocode(lat, lon);
     } catch {
-      // GPS not granted or timed out, use fallback
-      cityName = 'San Francisco';
-      lat = 37.7749;
-      lon = -122.4194;
+      const approximateLocation = await getApproximateLocation();
+      lat = approximateLocation.latitude;
+      lon = approximateLocation.longitude;
+      cityName = approximateLocation.cityName || 'Approximate location';
     }
   }
 

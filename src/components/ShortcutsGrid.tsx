@@ -107,13 +107,13 @@ export const ShortcutsGrid: React.FC<ShortcutsGridProps> = ({
   };
 
   return (
-    <section id="shortcuts-section" className="w-full max-w-4xl mx-auto px-4 mt-6 z-10">
+    <section id="shortcuts-section" className="w-full max-w-3xl mx-auto px-4 mt-6 z-10">
       {/* Header with edit toggle & icon-only toggle */}
-      <div className="flex items-center justify-between mb-3 px-2">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3 px-2">
         <div className="flex items-center gap-2">
           <span
             id="shortcutsText"
-            className="text-xs font-bold uppercase tracking-wider text-[var(--md-sys-color-on-surface-variant)]"
+            className="text-xs font-bold uppercase tracking-wider whitespace-nowrap text-[var(--md-sys-color-on-surface-variant)]"
           >
             Quick Access Dashboard
           </span>
@@ -152,7 +152,8 @@ export const ShortcutsGrid: React.FC<ShortcutsGridProps> = ({
       {/* Grid of Shortcuts */}
       <div
         id="shortcutsContainer"
-        className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3 sm:gap-4 select-none items-center justify-items-center"
+        className="shortcuts-grid grid gap-2 select-none items-center justify-center justify-items-center"
+        style={{ '--shortcut-columns': Math.max(3, Math.min(8, settings.shortcutsPerRow)) } as React.CSSProperties}
       >
         {shortcuts.map((item) => {
           return (
@@ -205,12 +206,12 @@ export const ShortcutsGrid: React.FC<ShortcutsGridProps> = ({
                   className={`w-14 h-14 sm:w-16 sm:h-16 rounded-2xl sm:rounded-3xl flex items-center justify-center transition-all duration-200 overflow-hidden ${
                     !isOnlyIcons ? 'mb-1.5' : ''
                   } ${
-                    settings.adaptiveIcons && !isOnlyIcons
-                      ? 'bg-[var(--md-sys-color-primary-container)] text-[var(--md-sys-color-on-primary-container)] shadow-xs'
-                      : 'hover:bg-[var(--md-sys-color-surface-container-high)]/60'
+                    settings.adaptiveIcons
+                      ? 'bg-[var(--md-sys-color-primary-container)] text-[var(--md-sys-color-on-primary-container)] border border-[var(--md-sys-color-primary)]/20 shadow-sm'
+                      : 'bg-[var(--md-sys-color-surface-container)]/60 hover:bg-[var(--md-sys-color-surface-container-high)]/80'
                   }`}
                   style={
-                    !settings.adaptiveIcons && item.customColor && !isOnlyIcons
+                    !settings.adaptiveIcons && item.customColor
                       ? {
                           backgroundColor: `${item.customColor}20`,
                           borderColor: `${item.customColor}40`,
@@ -221,7 +222,7 @@ export const ShortcutsGrid: React.FC<ShortcutsGridProps> = ({
                   <img
                     src={getFaviconUrl(item)}
                     alt={item.title}
-                    className="w-10 h-10 sm:w-11 sm:h-11 object-contain drop-shadow-sm transition-transform duration-200"
+                    className="w-7 h-7 sm:w-[31px] sm:h-[31px] object-contain drop-shadow-sm transition-transform duration-200"
                     referrerPolicy="no-referrer"
                     onError={(e) => {
                       (e.currentTarget as HTMLElement).style.display = 'none';
@@ -232,7 +233,7 @@ export const ShortcutsGrid: React.FC<ShortcutsGridProps> = ({
                   {/* Fallback Letter if image doesn't load */}
                   <span
                     style={{ display: 'none' }}
-                    className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-[var(--md-sys-color-primary-container)] text-[var(--md-sys-color-on-primary-container)] font-bold text-lg uppercase flex items-center justify-center shadow-xs"
+                    className="w-7 h-7 sm:w-[31px] sm:h-[31px] rounded-xl bg-[var(--md-sys-color-primary-container)] text-[var(--md-sys-color-on-primary-container)] font-bold text-sm uppercase flex items-center justify-center shadow-xs"
                   >
                     {item.title.charAt(0)}
                   </span>

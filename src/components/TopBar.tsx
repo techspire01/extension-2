@@ -275,9 +275,9 @@ export const TopBar: React.FC<TopBarProps> = ({
                             : { left: `${coords.left}px` }),
                           zIndex: 40,
                           maxHeight: 'calc(100vh - 120px)',
-                          width: '130px',
+                          width: '220px',
                         }}
-                        className="w-[130px] bg-transparent rounded-none shadow-none border-none p-1 animate-in fade-in zoom-in-95 duration-150 flex flex-col gap-1.5 overflow-y-auto custom-scrollbar"
+                        className="glass-surface-high w-[220px] rounded-xl shadow-xl border border-[var(--md-sys-color-outline)]/60 p-2 animate-in fade-in zoom-in-95 duration-150 flex flex-col gap-1.5 overflow-y-auto custom-scrollbar"
                       >
                         {folderBookmarks.length === 0 ? (
                           <span className="py-1 px-1.5 text-xs text-[var(--md-sys-color-on-surface-variant)]">
@@ -293,7 +293,7 @@ export const TopBar: React.FC<TopBarProps> = ({
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 onClick={() => setActiveFolder(null)}
-                                className="group flex items-center gap-2 py-1 px-1.5 rounded-lg bg-transparent hover:bg-transparent text-[var(--md-sys-color-on-surface)] transition-colors cursor-pointer min-w-0"
+                                className="group flex items-center gap-2 py-2 px-2.5 rounded-lg bg-[var(--md-sys-color-surface-container)] hover:bg-[var(--md-sys-color-primary-container)] text-[var(--md-sys-color-on-surface)] shadow-xs transition-colors cursor-pointer min-w-0"
                               >
                                 <img
                                   src={`https://www.google.com/s2/favicons?domain=${domain}&sz=32`}

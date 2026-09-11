@@ -523,7 +523,7 @@ export const BookmarksDrawer: React.FC<BookmarksDrawerProps> = ({
                               return (
                                 <div
                                   key={item.id}
-                                  className="group relative flex items-center justify-between p-2 rounded-xl bg-[var(--md-sys-color-surface-container)] border border-[var(--md-sys-color-outline)]/40 hover:border-[var(--md-sys-color-primary)]/60 hover:shadow-xs transition-all"
+                                  className="group relative flex items-center justify-between p-2 rounded-xl bg-[var(--md-sys-color-surface-container-high)] border border-[var(--md-sys-color-outline)]/60 shadow-xs hover:border-[var(--md-sys-color-primary)]/60 hover:shadow-sm transition-all"
                                 >
                                   {/* Hierarchy branch line connector */}
                                   <span className="absolute -left-4 top-1/2 -translate-y-1/2 w-3.5 h-0.5 bg-[var(--md-sys-color-primary)]/30" />
@@ -594,7 +594,7 @@ export const BookmarksDrawer: React.FC<BookmarksDrawerProps> = ({
               {sorted.map((item) => (
                 <div
                   key={item.id}
-                  className="group relative flex flex-col p-3 rounded-2xl bg-[var(--md-sys-color-surface)] border border-[var(--md-sys-color-outline)]/40 hover:border-[var(--md-sys-color-primary)] hover:shadow-md transition-all"
+                  className="group relative flex flex-col p-3 rounded-2xl bg-[var(--md-sys-color-surface-container)] border border-[var(--md-sys-color-outline)]/60 shadow-xs hover:border-[var(--md-sys-color-primary)] hover:shadow-md transition-all"
                 >
                   <div className="flex items-start justify-between">
                     <img
@@ -647,7 +647,7 @@ export const BookmarksDrawer: React.FC<BookmarksDrawerProps> = ({
               {sorted.map((item) => (
                 <div
                   key={item.id}
-                  className="group flex items-center justify-between p-2.5 rounded-2xl bg-[var(--md-sys-color-surface)] border border-[var(--md-sys-color-outline)]/40 hover:border-[var(--md-sys-color-primary)]/40 hover:shadow-xs transition-all"
+                  className="group flex items-center justify-between p-2.5 rounded-2xl bg-[var(--md-sys-color-surface-container)] border border-[var(--md-sys-color-outline)]/60 shadow-xs hover:border-[var(--md-sys-color-primary)]/40 hover:shadow-sm transition-all"
                 >
                   <a
                     href={item.url}

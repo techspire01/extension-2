@@ -41,9 +41,10 @@ export const WeatherWidget: React.FC<WeatherWidgetProps> = ({
   };
 
   useEffect(() => {
-    if (settings.showWeather) {
-      loadWeather();
-    }
+    if (!settings.showWeather) return;
+    const delay = !settings.useGPS && settings.customLocation ? 600 : 0;
+    const timeoutId = window.setTimeout(loadWeather, delay);
+    return () => window.clearTimeout(timeoutId);
   }, [settings.showWeather, settings.useGPS, settings.customLocation]);
 
   if (!settings.showWeather) {
@@ -86,7 +87,7 @@ export const WeatherWidget: React.FC<WeatherWidgetProps> = ({
     return (
       <div
         id="hideWeather"
-        className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[var(--md-sys-color-surface-container)]/90 backdrop-blur-md shadow-sm border border-[var(--md-sys-color-outline)]/40 text-sm font-medium text-[var(--md-sys-color-on-surface)] cursor-pointer hover:shadow transition-all"
+        className="glass-surface flex items-center gap-2 px-3.5 py-1.5 rounded-full shadow-sm border border-[var(--md-sys-color-outline)]/40 text-sm font-medium text-[var(--md-sys-color-on-surface)] cursor-pointer hover:shadow transition-all"
         onClick={onOpenSettingsWeather}
         title={`${weather.city}: ${weather.condition}`}
       >
@@ -104,7 +105,7 @@ export const WeatherWidget: React.FC<WeatherWidgetProps> = ({
   return (
     <div
       id="hideWeather"
-      className="p-4 rounded-3xl bg-[var(--md-sys-color-surface-container)]/85 backdrop-blur-md shadow-md border border-[var(--md-sys-color-outline)]/40 text-[var(--md-sys-color-on-surface)] transition-all duration-200 hover:shadow-lg w-full max-w-xs"
+      className="glass-surface p-4 rounded-3xl shadow-md border border-[var(--md-sys-color-outline)]/40 text-[var(--md-sys-color-on-surface)] transition-all duration-200 hover:shadow-lg w-full max-w-xs"
     >
       {loading && !weather ? (
         <div className="flex items-center justify-center py-6 gap-2 text-sm text-[var(--md-sys-color-on-surface-variant)]">
